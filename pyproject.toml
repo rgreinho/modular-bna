@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "bna"
+version = "0.1.0"
+description = ""
+authors = ["Rémy Greinhofer <remy.greinhofer@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+sqlfluff = "^2.1.1"
+black = "^23.3.0"
+ruff = "^0.0.270"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.sqlfluff.core]
+dialect = "postgres"
+
+[tool.isort]
+profile = "black"
+force_grid_wrap = 2
