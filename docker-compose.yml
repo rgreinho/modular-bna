@@ -1,0 +1,18 @@
+version: "3"
+services:
+  postgres:
+    image: bna:remy
+    environment:
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_USER: postgres
+        POSTGRESQL_USERNAME: bna
+        POSTGRESQL_PASSWORD: bna
+        POSTGRESQL_DATABASE: bna
+    ports:
+      - 5432:5432
+    volumes:
+        - postgres:/var/lib/postgresql/data
+
+volumes:
+  postgres:
+    external: false

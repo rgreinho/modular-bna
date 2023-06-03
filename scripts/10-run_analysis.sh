@@ -2,7 +2,6 @@
 set -euo pipefail
 [ -n "${PFB_DEBUG}" ] && set -x
 
-
 # NB_MAX_TRIP_DISTANCE should be in the same units of the NB_OUTPUT_SRID projection
 # Typically meters because we autodetect and use UTM zones
 export NB_MAX_TRIP_DISTANCE="${NB_MAX_TRIP_DISTANCE:-2680}"
@@ -19,23 +18,18 @@ mkdir -p "${PFB_TEMPDIR}"
 # run job
 
 # determine coordinate reference system based on input shapefile UTM zone
-export NB_OUTPUT_SRID="$(./scripts/detect_utm_zone.py $PFB_SHPFILE)"
-./scripts/import.sh $PFB_SHPFILE $PFB_OSM_FILE $PFB_COUNTRY $PFB_STATE $PFB_STATE_FIPS
+NB_OUTPUT_SRID="$(python 11-detect_utm_zone.py "$PFB_SHPFILE")"
+export NB_OUTPUT_SRID
+./scripts/import.sh $"PFB_SHPFILE" "$PFB_OSM_FILE" "$PFB_COUNTRY" "$PFB_STATE" "$PFB_STATE_FIPS"
 ./scripts/run_connectivity.sh
 
-# print scores
-psql -h "${NB_POSTGRESQL_HOST}" -U "${NB_POSTGRESQL_USER}" -d "${NB_POSTGRESQL_DB}" <<EOF
-SELECT * FROM neighborhood_overall_scores;
-EOF
-
 EXPORT_DIR="${NB_OUTPUT_DIR:-$PFB_TEMPDIR/output}"
-if [ -n "${PFB_JOB_ID}" ]
-then
-    EXPORT_DIR="${EXPORT_DIR}/${PFB_JOB_ID}"
+if [ -n "${PFB_JOB_ID}" ]; then
+  EXPORT_DIR="${EXPORT_DIR}/${PFB_JOB_ID}"
 else
-    EXPORT_DIR="${EXPORT_DIR}/local-analysis-`date +%F-%H%M`"
+  EXPORT_DIR="${EXPORT_DIR}/local-analysis-$(date +%F-%H%M)"
 fi
-./scripts/export_connectivity.sh $EXPORT_DIR
+./scripts/export_connectivity.sh "$EXPORT_DIR"
 
 rm -rf "${PFB_TEMPDIR}"
 

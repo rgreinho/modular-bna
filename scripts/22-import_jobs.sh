@@ -41,7 +41,6 @@ function import_job_data() {
   psql -c "\copy ${TABLE} FROM '${JOB_FILEPATH}' DELIMITER ',' CSV HEADER"
 }
 
-
 echo "Importing jobs data"
 import_job_data "${PFB_STATE}" "main"
 import_job_data "${PFB_STATE}" "aux"
