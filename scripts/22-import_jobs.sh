@@ -8,15 +8,8 @@ function import_job_data() {
   # Data type is either 'main' or 'aux'.
   DATA_TYPE="${2:-main}"
   JOB_FILENAME="${PFB_STATE}_od_${DATA_TYPE}_JT00_${CENSUS_YEAR}.csv"
-  ROOT_TEMPDIR="$(mktemp -d)"
-  TEMPDIR="${ROOT_TEMPDIR}/import_jobs"
+  TEMPDIR="test/usa-az-flagstaff"
   JOB_FILEPATH=${TEMPDIR}/${JOB_FILENAME}
-
-  # Create the temporary directories and extract the data.
-  mkdir -p "${TEMPDIR}"
-  # Dir and files must be world readable(/executable(???)) for postgres to use copy command.
-  chmod -R a+r "${ROOT_TEMPDIR}"
-  gunzip -c "/data/${JOB_FILENAME}.gz" >"${JOB_FILEPATH}"
 
   # Create the table.
   TABLE=state_od_${DATA_TYPE}_JT00
