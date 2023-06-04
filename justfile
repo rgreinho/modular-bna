@@ -1,3 +1,6 @@
+set dotenv-load
+
+# Define variables.
 script_dir := "scripts"
 sql_dir := "sql"
 
@@ -53,3 +56,6 @@ docker-run:
       -e PGHOST=localhost \
       -e PGDATABASE=pfb \
       bna:remy
+
+bna-prepare:
+    ./scripts/01-setup_database.sh

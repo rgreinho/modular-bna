@@ -7,6 +7,8 @@ RUN apt-get update \
   g++ \
   git \
   make \
+  postgresql-13-pgrouting \
+  postgresql-plpython3-13\
   postgresql-server-dev-13 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
