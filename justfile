@@ -59,3 +59,6 @@ docker-run:
 
 bna-prepare:
     ./scripts/01-setup_database.sh
+
+bna-import:
+    PFB_STATE=az CENSUS_YEAR=2019 ./scripts/22-import_jobs.sh
