@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 # Wait for database to become available.
 timeout 90s bash -c "until pg_isready ; do sleep 5 ; done"

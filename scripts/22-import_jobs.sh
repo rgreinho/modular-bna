@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 function import_job_data() {
   # Force to lower case to match the jobs file download paths.

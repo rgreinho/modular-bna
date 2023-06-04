@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 # NB_MAX_TRIP_DISTANCE should be in the same units of the NB_OUTPUT_SRID projection
 # Typically meters because we autodetect and use UTM zones

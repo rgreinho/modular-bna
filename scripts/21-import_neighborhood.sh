@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 # Function to import a shapefile (using 'dump' mode for quickness) and convert it to the target SRID
 function import_and_transform_shapefile() {

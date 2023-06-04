@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 cd "$(dirname "$0")"
 

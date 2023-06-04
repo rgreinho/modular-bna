@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-[ -n "${PFB_DEBUG}" ] && set -x
+[ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 PFB_SHPFILE="${1}"
 PFB_OSM_FILE="${2}"
