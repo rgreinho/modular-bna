@@ -63,6 +63,7 @@ bna-prepare:
 bna-import:
     PFB_STATE_FIPS=04 NB_INPUT_SRID=4236 NB_OUTPUT_SRID=2163 NB_BOUNDARY_FILE=test/usa-az-flagstaff/flagstaff-arizona.shp NB_COUNTRY=USA ./scripts/21-import_neighborhood.sh
     PFB_STATE=az CENSUS_YEAR=2019 ./scripts/22-import_jobs.sh
+    NB_TEMPDIR="${PWD}/test/usa-az-flagstaff" ./scripts/23-import_osm.sh "${PWD}/test/usa-az-flagstaff/flagstaff-arizona.osm"
 
 setup-flagstaff:
     mkdir -p test/usa-az-flagstaff \
