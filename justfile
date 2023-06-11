@@ -73,7 +73,7 @@ bna-compute-provincetown-massachusetts:
 bna-export-provincetown-massachusetts:
     rm -fr ./output
     mkdir ./output
-    ./scripts/40-export-export_connectivity.sh
+    ./scripts/40-export-export_connectivity.sh output
 
 bna-run: bna-prepare bna-import-provincetown-massachusetts bna-compute-provincetown-massachusetts bna-export-provincetown-massachusetts
 
