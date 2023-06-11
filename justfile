@@ -68,8 +68,14 @@ bna-import-provincetown-massachusetts:
 bna-compute-provincetown-massachusetts:
     NB_OUTPUT_SRID=2163 ./scripts/30-compute-features.sh
     STATE_DEFAULT= CITY_DEFAULT= ./scripts/31-compute-stress.sh
-    RUN_IMPORT_JOBS=1 ./scripts/32compute-run-connectivity.sh
+    RUN_IMPORT_JOBS=1 ./scripts/32-compute-run-connectivity.sh
 
+bna-export-provincetown-massachusetts:
+    rm -fr ./output
+    mkdir ./output
+    ./scripts/40-export-export_connectivity.sh
+
+bna-run: bna-prepare bna-import-provincetown-massachusetts bna-compute-provincetown-massachusetts bna-export-provincetown-massachusetts
 
 setup-flagstaff:
     mkdir -p test/usa-az-flagstaff \
