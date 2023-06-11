@@ -83,7 +83,7 @@ rm -rf "${OSM_TEMPDIR}"
 echo 'START: Importing State Default Speed Table'
 psql <../sql/speed_tables.sql
 
-SPEED_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}/speed"
+SPEED_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}"
 mkdir -p "${SPEED_TEMPDIR}"
 
 # Import state residential speeds file

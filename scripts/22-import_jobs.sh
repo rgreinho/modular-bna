@@ -7,8 +7,8 @@ function import_job_data() {
   # Data type is either 'main' or 'aux'.
   DATA_TYPE="${2:-main}"
   JOB_FILENAME="${PFB_STATE}_od_${DATA_TYPE}_JT00_${CENSUS_YEAR}.csv"
-  TEMPDIR="test/usa-az-flagstaff"
-  JOB_FILEPATH=${TEMPDIR}/${JOB_FILENAME}
+  # NB_TEMPDIR="test/usa-az-flagstaff"
+  JOB_FILEPATH=${NB_TEMPDIR}/${JOB_FILENAME}
 
   # Create the table.
   TABLE=state_od_${DATA_TYPE}_JT00

@@ -3,7 +3,7 @@ set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-NB_TEMPDIR="test/usa-az-flagstaff"
+# NB_TEMPDIR="test/data"
 NB_MAX_TRIP_DISTANCE=2680
 NB_BOUNDARY_BUFFER=$NB_MAX_TRIP_DISTANCE
 
