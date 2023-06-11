@@ -51,7 +51,7 @@ WHERE
             AND ST_DWITHIN(
                 neighborhood_ways_intersections.geom,
                 osm.way,
-                : sigctl_search_dist
+                :sigctl_search_dist
             )
     );
 
@@ -72,6 +72,6 @@ WHERE
             AND ST_DWITHIN(
                 neighborhood_ways_intersections.geom,
                 i.geom,
-                : sigctl_search_dist
+                :sigctl_search_dist
             )
     );
