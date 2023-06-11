@@ -63,7 +63,13 @@ bna-prepare:
 bna-import-provincetown-massachusetts:
     NB_TEMPDIR="${PWD}/test/data" PFB_STATE_FIPS=25 NB_INPUT_SRID=4236 NB_OUTPUT_SRID=2163 NB_BOUNDARY_FILE="${PWD}/test/data/provincetown-massachusetts.shp" NB_COUNTRY=USA ./scripts/21-import_neighborhood.sh
     NB_TEMPDIR="${PWD}/test/data" PFB_STATE=ma CENSUS_YEAR=2019 ./scripts/22-import_jobs.sh
-    NB_TEMPDIR="${PWD}/test/data" ./scripts/23-import_osm.sh "${PWD}/test/data/provincetown-massachusetts.osm"
+    NB_TEMPDIR="${PWD}/test/data" PFB_STATE_FIPS=25 PFB_CITY_FIPS=555535 ./scripts/23-import_osm.sh "${PWD}/test/data/provincetown-massachusetts.osm"
+
+bna-compute-provincetown-massachusetts:
+    NB_OUTPUT_SRID=2163 ./scripts/30-compute-features.sh
+    STATE_DEFAULT= CITY_DEFAULT= ./scripts/31-compute-stress.sh
+    RUN_IMPORT_JOBS=1 ./scripts/32compute-run-connectivity.sh
+
 
 setup-flagstaff:
     mkdir -p test/usa-az-flagstaff \
