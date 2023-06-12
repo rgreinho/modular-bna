@@ -50,7 +50,7 @@ echo "BUILDING: Building network"
 echo "CONNECTIVITY: Reachable roads high stress"
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_prep.sql
 
-/usr/bin/time parallel<<EOF
+# /usr/bin/time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
@@ -59,14 +59,14 @@ psql -v thread_num=8 -v thread_no=4 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=5 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
-EOF
+# EOF
 
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_cleanup.sql
 
 echo "CONNECTIVITY: Reachable roads low stress"
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_prep.sql
 
-/usr/bin/time parallel<<EOF
+# /usr/bin/time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
@@ -75,7 +75,7 @@ psql -v thread_num=8 -v thread_no=4 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=5 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
-EOF
+# EOF
 
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_cleanup.sql
 
