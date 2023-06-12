@@ -50,6 +50,7 @@ echo "BUILDING: Building network"
 echo "CONNECTIVITY: Reachable roads high stress"
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_prep.sql
 
+/usr/bin/time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
@@ -58,12 +59,14 @@ psql -v thread_num=8 -v thread_no=4 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=5 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
+EOF
 
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_cleanup.sql
 
 echo "CONNECTIVITY: Reachable roads low stress"
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_prep.sql
 
+/usr/bin/time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
@@ -72,6 +75,7 @@ psql -v thread_num=8 -v thread_no=4 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=5 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
+EOF
 
 /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_cleanup.sql
 
@@ -83,16 +87,16 @@ echo "CONNECTIVITY: Connected census blocks"
 # rgreinho: crashes with
 #    psql:/Users/rgreinhofer/projects/rgreinho/modular-bna/sql/connectivity/access_population.sql:84: ERROR:  syntax error at or near ":"
 #    LINE 6:     WHEN pop_high_stress = pop_low_stress THEN: max_score
-# echo "METRICS: Access: population"
-# /usr/bin/time psql\
-#   -v max_score=1 \
-#   -v step1=0.03 \
-#   -v score1=0.1 \
-#   -v step2=0.2 \
-#   -v score2=0.4 \
-#   -v step3=0.5 \
-#   -v score3=0.8 \
-#   -f "${GIT_ROOT}"/sql/connectivity/access_population.sql
+echo "METRICS: Access: population"
+/usr/bin/time psql\
+  -v max_score=1 \
+  -v step1=0.03 \
+  -v score1=0.1 \
+  -v step2=0.2 \
+  -v score2=0.4 \
+  -v step3=0.5 \
+  -v score3=0.8 \
+  -f "${GIT_ROOT}"/sql/connectivity/access_population.sql
 
 if [ "$RUN_IMPORT_JOBS" = "1" ]; then
   echo "METRICS: Access: jobs"

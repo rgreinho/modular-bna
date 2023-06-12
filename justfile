@@ -67,7 +67,7 @@ bna-import-provincetown-massachusetts:
 
 bna-compute-provincetown-massachusetts:
     NB_OUTPUT_SRID=2163 ./scripts/30-compute-features.sh
-    STATE_DEFAULT= CITY_DEFAULT= ./scripts/31-compute-stress.sh
+    STATE_DEFAULT=30 CITY_DEFAULT=NULL ./scripts/31-compute-stress.sh
     RUN_IMPORT_JOBS=1 ./scripts/32-compute-run-connectivity.sh
 
 bna-export-provincetown-massachusetts:
