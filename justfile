@@ -60,5 +60,33 @@ docker-run:
 bna-prepare:
     ./scripts/01-setup_database.sh
 
-bna-import:
-    PFB_STATE=az CENSUS_YEAR=2019 ./scripts/22-import_jobs.sh
+bna-import-provincetown-massachusetts:
+    NB_TEMPDIR="${PWD}/test/data" PFB_STATE_FIPS=25 NB_INPUT_SRID=4236 NB_OUTPUT_SRID=2163 NB_BOUNDARY_FILE="${PWD}/test/data/provincetown-massachusetts.shp" NB_COUNTRY=USA ./scripts/21-import_neighborhood.sh
+    NB_TEMPDIR="${PWD}/test/data" PFB_STATE=ma CENSUS_YEAR=2019 ./scripts/22-import_jobs.sh
+    NB_TEMPDIR="${PWD}/test/data" PFB_STATE_FIPS=25 PFB_CITY_FIPS=555535 ./scripts/23-import_osm.sh "${PWD}/test/data/provincetown-massachusetts.osm"
+
+bna-compute-provincetown-massachusetts:
+    NB_OUTPUT_SRID=2163 ./scripts/30-compute-features.sh
+    STATE_DEFAULT=30 CITY_DEFAULT=NULL ./scripts/31-compute-stress.sh
+    RUN_IMPORT_JOBS=1 ./scripts/32-compute-run-connectivity.sh
+
+bna-export-provincetown-massachusetts:
+    rm -fr ./output
+    mkdir ./output
+    ./scripts/40-export-export_connectivity.sh output
+
+bna-run: bna-prepare bna-import-provincetown-massachusetts bna-compute-provincetown-massachusetts bna-export-provincetown-massachusetts
+
+setup-flagstaff:
+    mkdir -p test/usa-az-flagstaff \
+    && cd test/usa-az-flagstaff \
+    && export PFB_STATE=az CENSUS_YEAR=2019 \
+    && curl -L -o - http://lehd.ces.census.gov/data/lodes/LODES7/${PFB_STATE}/od/${PFB_STATE}_od_main_JT00_${CENSUS_YEAR}.csv.gz | gunzip > ${PFB_STATE}_od_main_JT00_${CENSUS_YEAR}.csv \
+    && curl -L -o - http://lehd.ces.census.gov/data/lodes/LODES7/${PFB_STATE}/od/${PFB_STATE}_od_aux_JT00_${CENSUS_YEAR}.csv.gz | gunzip > ${PFB_STATE}_od_aux_JT00_${CENSUS_YEAR}.csv \
+    && curl -LO https://s3.amazonaws.com/pfb-public-documents/censuswaterblocks.zip \
+    && unzip censuswaterblocks.zip \
+    && rm -f censuswaterblocks.zip \
+    && curl -LO http://www2.census.gov/geo/tiger/TIGER2010BLKPOPHU/tabblock2010_04_pophu.zip \
+    && unzip tabblock2010_04_pophu.zip \
+    && rm -f tabblock2010_04_pophu.zip \
+    && for f in tabblock2010_04_pophu.*; do mv "$f" "${f/tabblock2010_04_pophu/population}"; done \

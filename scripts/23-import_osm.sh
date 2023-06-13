@@ -4,16 +4,16 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-# NB_POSTGRESQL_HOST="${NB_POSTGRESQL_HOST:-127.0.0.1}"
-# NB_POSTGRESQL_DB="${NB_POSTGRESQL_DB:-pfb}"
-# NB_POSTGRESQL_USER="${NB_POSTGRESQL_USER:-gis}"
+# PGHOST="${PGHOST:-127.0.0.1}"
+# PGDATABASE="${PGDATABASE:-pfb}"
+# PGUSER="${PGUSER:-gis}"
 # NB_POSTGRESQL_PASSWORD="${NB_POSTGRESQL_PASSWORD:-gis}"
 NB_OUTPUT_SRID="${NB_OUTPUT_SRID:-2163}"
 NB_SIGCTL_SEARCH_DIST="${NB_SIGCTL_SEARCH_DIST:-25}" # max search distance for intersection controls
 NB_MAX_TRIP_DISTANCE="${NB_MAX_TRIP_DISTANCE:-2680}"
 NB_BOUNDARY_BUFFER="${NB_BOUNDARY_BUFFER:-$NB_MAX_TRIP_DISTANCE}"
-PFB_STATE_FIPS="${PFB_STATE_FIPS:-NULL}"
-PFB_CITY_FIPS="${PFB_CITY_FIPS:-0}"
+# PFB_STATE_FIPS="${PFB_STATE_FIPS:-NULL}"
+# PFB_CITY_FIPS="${PFB_CITY_FIPS:-0}"
 PFB_RESIDENTIAL_SPEED_LIMIT="${PFB_RESIDENTIAL_SPEED_LIMIT:-}"
 
 # Get the neighborhood_boundary bbox as extent of trimmed census blocks
@@ -38,9 +38,10 @@ mv "${OSM_DATA_FILE}-cleaned" "$OSM_DATA_FILE"
 echo "IMPORTING Importing OSM data"
 osm2pgrouting \
   -f "$OSM_DATA_FILE" \
-  -h "$NB_POSTGRESQL_HOST" \
-  --dbname "${NB_POSTGRESQL_DB}" \
-  --username "${NB_POSTGRESQL_USER}" \
+  -h "$PGHOST" \
+  --dbname "${PGDATABASE}" \
+  --username "${PGUSER}" \
+  --password "${PGPASSWORD}" \
   --schema received \
   --prefix neighborhood_ \
   --conf ./mapconfig_highway.xml \
@@ -49,9 +50,10 @@ osm2pgrouting \
 # import the osm with cycleways that the above misses (bug in osm2pgrouting)
 osm2pgrouting \
   -f "$OSM_DATA_FILE" \
-  -h "$NB_POSTGRESQL_HOST" \
-  --dbname "${NB_POSTGRESQL_DB}" \
-  --username "${NB_POSTGRESQL_USER}" \
+  -h "$PGHOST" \
+  --dbname "${PGDATABASE}" \
+  --username "${PGUSER}" \
+  --password "${PGPASSWORD}" \
   --schema scratch \
   --prefix neighborhood_cycwys_ \
   --conf ./mapconfig_cycleway.xml \
@@ -68,11 +70,7 @@ psql -c "ALTER TABLE scratch.neighborhood_cycwys_ways_vertices_pgr RENAME CONSTR
 
 # import
 osm2pgsql \
-  --host "${NB_POSTGRESQL_HOST}" \
-  --username "${NB_POSTGRESQL_USER}" \
-  --port 5432 \
   --create \
-  --database "${NB_POSTGRESQL_DB}" \
   --prefix "neighborhood_osm_full" \
   --proj "${NB_OUTPUT_SRID}" \
   --style ./pfb.style \
@@ -83,9 +81,9 @@ rm -rf "${OSM_TEMPDIR}"
 
 # Create table for state residential speeds
 echo 'START: Importing State Default Speed Table'
-psql <../sql/state_speed_table.sql
+psql <../sql/speed_tables.sql
 
-SPEED_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}/speed"
+SPEED_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}"
 mkdir -p "${SPEED_TEMPDIR}"
 
 # Import state residential speeds file
@@ -104,7 +102,7 @@ echo "DONE: Importing state default residential speed"
 echo 'START: Importing City Default Speed Table'
 
 CITY_SPEED_FILENAME="city_fips_speed"
-CITY_SPEED_DOWNLOAD="/data/${CITY_SPEED_FILENAME}.csv"
+CITY_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${CITY_SPEED_FILENAME}.csv"
 psql -c "\copy city_speed FROM ${CITY_SPEED_DOWNLOAD} delimiter ',' csv header"
 
 # Set default residential speed for city
@@ -145,71 +143,3 @@ psql -c "ALTER TABLE generated.neighborhood_osm_full_line SET SCHEMA received;"
 psql -c "ALTER TABLE generated.neighborhood_osm_full_point SET SCHEMA received;"
 psql -c "ALTER TABLE generated.neighborhood_osm_full_polygon SET SCHEMA received;"
 psql -c "ALTER TABLE generated.neighborhood_osm_full_roads SET SCHEMA received;"
-
-# process tables
-echo 'Updating field names'
-psql -v nb_output_srid="${NB_OUTPUT_SRID}" -f ./prepare_tables.sql
-echo 'Clipping OSM source data to boundary + buffer'
-psql -v nb_boundary_buffer="${NB_BOUNDARY_BUFFER}" -f ./clip_osm.sql
-echo 'Removing paths that prohibit bicycles'
-psql -c "DELETE FROM neighborhood_osm_full_line WHERE bicycle='no' and highway='path';"
-echo 'Setting values on road segments'
-psql -f ../features/one_way.sql
-psql -f ../features/width_ft.sql
-psql -f ../features/functional_class.sql
-psql -v nb_output_srid="${NB_OUTPUT_SRID}" -f ../features/paths.sql
-psql -f ../features/speed_limit.sql
-psql -f ../features/lanes.sql
-psql -f ../features/park.sql
-psql -f ../features/bike_infra.sql
-psql -f ../features/class_adjustments.sql
-echo 'Setting values on intersections'
-psql -f ../features/legs.sql
-psql -v sigctl_search_dist="${NB_SIGCTL_SEARCH_DIST}" -f ../features/signalized.sql
-psql -v sigctl_search_dist="${NB_SIGCTL_SEARCH_DIST}" -f ../features/stops.sql
-psql -v sigctl_search_dist="${NB_SIGCTL_SEARCH_DIST}" -f ../features/rrfb.sql
-psql -v sigctl_search_dist="${NB_SIGCTL_SEARCH_DIST}" -f ../features/island.sql
-echo 'Calculating stress'
-psql -f ../stress/stress_motorway-trunk.sql
-# primary
-psql -v class=primary -v default_speed=40 -v default_lanes=2 \
-  -v default_parking=1 -v default_parking_width=8 -v default_facility_width=5 \
-  -f ../stress/stress_segments_higher_order.sql
-# secondary
-psql -v class=secondary -v default_speed=40 -v default_lanes=2 \
-  -v default_parking=1 -v default_parking_width=8 -v default_facility_width=5 \
-  -f ../stress/stress_segments_higher_order.sql
-# tertiary
-psql -v class=tertiary -v default_speed=30 -v default_lanes=1 \
-  -v default_parking=1 -v default_parking_width=8 -v default_facility_width=5 \
-  -f ../stress/stress_segments_higher_order.sql
-# residential
-psql -v class=residential -v default_lanes=1 \
-  -v default_parking=1 -v default_roadway_width=27 \
-  -v state_default="${STATE_DEFAULT}" -v city_default="${CITY_DEFAULT}" \
-  -f ../stress/stress_segments_lower_order_res.sql
-# unclassified
-psql -v class=unclassified -v default_speed=25 -v default_lanes=1 \
-  -v default_parking=1 -v default_roadway_width=27 \
-  -f ../stress/stress_segments_lower_order.sql
-psql -f ../stress/stress_living_street.sql
-psql -f ../stress/stress_track.sql
-psql -f ../stress/stress_path.sql
-psql -f ../stress/stress_one_way_reset.sql
-psql -f ../stress/stress_motorway-trunk_ints.sql
-psql -f ../stress/stress_primary_ints.sql
-psql -f ../stress/stress_secondary_ints.sql
-# tertiary intersections
-psql -v primary_speed=40 \
-  -v secondary_speed=40 \
-  -v primary_lanes=2 \
-  -v secondary_lanes=2 \
-  -f ../stress/stress_tertiary_ints.sql
-psql -v primary_speed=40 \
-  -v secondary_speed=40 \
-  -v tertiary_speed=30 \
-  -v primary_lanes=2 \
-  -v secondary_lanes=2 \
-  -v tertiary_lanes=1 \
-  -f ../stress/stress_lesser_ints.sql
-psql -f ../stress/stress_link_ints.sql

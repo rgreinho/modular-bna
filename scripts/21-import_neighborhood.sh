@@ -2,6 +2,11 @@
 set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
+GIT_ROOT=$(git rev-parse --show-toplevel)
+# NB_TEMPDIR="test/data"
+NB_MAX_TRIP_DISTANCE=2680
+NB_BOUNDARY_BUFFER=$NB_MAX_TRIP_DISTANCE
+
 # Function to import a shapefile (using 'dump' mode for quickness) and convert it to the target SRID
 function import_and_transform_shapefile() {
   IMPORT_FILE="${1}"
@@ -18,40 +23,19 @@ function import_and_transform_shapefile() {
   echo "DONE: Importing ${IMPORT_TABLENAME}"
 }
 
-NB_BOUNDARY_FILE="${1}"
-NB_COUNTRY="${2}"
-# NB_STATE="${3}"
-NB_STATE_FIPS="${4}"
-
-NB_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}/import_neighborhood"
-mkdir -p "${NB_TEMPDIR}"
-
-NB_BOUNDARY_BUFFER="${NB_BOUNDARY_BUFFER:-$NB_MAX_TRIP_DISTANCE}"
-
 # Import neighborhood boundary
 import_and_transform_shapefile "${NB_BOUNDARY_FILE}" neighborhood_boundary "${NB_INPUT_SRID}"
 
 if [ "${NB_COUNTRY}" == "USA" ]; then
   echo "IMPORTING: Downloading water blocks"
-  psql <../sql/create_us_water_blocks_table.sql
-  psql -c "\copy water_blocks FROM /data/censuswaterblocks.csv delimiter ',' csv header"
+  psql <"${GIT_ROOT}/sql/create_us_water_blocks_table.sql"
+  psql -c "\copy water_blocks FROM ${NB_TEMPDIR}/censuswaterblocks.csv delimiter ',' csv header"
   echo "DONE: Importing water blocks"
 fi
 
-# Get blocks for the place requested
-echo "IMPORTING: Loading census blocks"
-# Set the filename for US states, otherwise use a generic name
-if [ "${NB_COUNTRY}" == "USA" ]; then
-  NB_BLOCK_FILENAME="tabblock2010_${NB_STATE_FIPS}_pophu"
-else
-  NB_BLOCK_FILENAME="population"
-fi
-BLOCK_DOWNLOAD="/data/${NB_BLOCK_FILENAME}.zip"
-unzip "${BLOCK_DOWNLOAD}" -d "${NB_TEMPDIR}"
-
 # Import block shapefile
 echo "IMPORTING: Loading census blocks"
-import_and_transform_shapefile "${BLOCK_DOWNLOAD}.shp" neighborhood_census_blocks 4326
+import_and_transform_shapefile "${NB_TEMPDIR}/population.shp" neighborhood_census_blocks 4326
 
 # Only keep blocks in boundary+buffer
 echo "IMPORTING: Applying boundary buffer"
