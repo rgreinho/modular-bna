@@ -29,7 +29,7 @@ import_and_transform_shapefile "${NB_BOUNDARY_FILE}" neighborhood_boundary "${NB
 if [ "${NB_COUNTRY}" == "USA" ]; then
   echo "IMPORTING: Downloading water blocks"
   psql <"${GIT_ROOT}/sql/create_us_water_blocks_table.sql"
-  psql -c "\copy water_blocks FROM ${NB_TEMPDIR}/censuswaterblocks.csv delimiter ',' csv header"
+  psql -c "\copy water_blocks FROM ${NB_TEMPDIR}/censuswaterblocks.csv delimiter ',' csv header;"
   echo "DONE: Importing water blocks"
 fi
 
