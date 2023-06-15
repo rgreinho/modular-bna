@@ -30,7 +30,7 @@ function import_job_data() {
 );"
 
   # Load data.
-  psql -c "\copy ${TABLE} FROM '${JOB_FILEPATH}' DELIMITER ',' CSV HEADER"
+  psql -c "\copy ${TABLE} FROM '${JOB_FILEPATH}' DELIMITER ',' CSV HEADER;"
 }
 
 echo "Importing jobs data"
