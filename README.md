@@ -9,20 +9,30 @@ export $(cat .env | xargs)
 Start and stop a clean docker-compose:
 
 ```bash
-docker-compose up && docker-compose rm -f
+docker-compose up
+docker-compose rm -f
 ```
 
-Download part of the files to import for Flagstaff, AZ:
+Use the brokenspoke-analyzer to fetch the data to import into the BNA:
 
 ```bash
-just setup-flagstaff
+bna -v prepare massachusetts provincetown --output-dir tests/samples/provincetown-massachusetts/data
 ```
 
-The rest of the files must come from the brokenspoke-analyzer:
+Source the analysis variables:
 
 ```bash
-bna -v run arizona flagstaff
+export $(cat tests/scripts/provincetown-massachusetts.sh | xargs)
 ```
 
-And copy the `data/flagstaff-arizona*` files into the test folder
-`test/usa-az-flagstaff`.
+Run the analysis script (optionally in debug mode):
+
+```bash
+bash -x tests/scripts/run-analysis.sh
+```
+
+To clean up the variables before running a new analysis (optional, just to be safe):
+
+```bash
+unset BNA_CITY BNA_CITY BNA_FULL_STATE BNA_CITY_FIPS BNA_COUNTRY BNA_SHORT_STATE BNA_STATE_FIPS
+```

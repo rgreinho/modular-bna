@@ -76,17 +76,3 @@ bna-export-provincetown-massachusetts:
     ./scripts/40-export-export_connectivity.sh output
 
 bna-run: bna-prepare bna-import-provincetown-massachusetts bna-compute-provincetown-massachusetts bna-export-provincetown-massachusetts
-
-setup-flagstaff:
-    mkdir -p test/usa-az-flagstaff \
-    && cd test/usa-az-flagstaff \
-    && export PFB_STATE=az CENSUS_YEAR=2019 \
-    && curl -L -o - http://lehd.ces.census.gov/data/lodes/LODES7/${PFB_STATE}/od/${PFB_STATE}_od_main_JT00_${CENSUS_YEAR}.csv.gz | gunzip > ${PFB_STATE}_od_main_JT00_${CENSUS_YEAR}.csv \
-    && curl -L -o - http://lehd.ces.census.gov/data/lodes/LODES7/${PFB_STATE}/od/${PFB_STATE}_od_aux_JT00_${CENSUS_YEAR}.csv.gz | gunzip > ${PFB_STATE}_od_aux_JT00_${CENSUS_YEAR}.csv \
-    && curl -LO https://s3.amazonaws.com/pfb-public-documents/censuswaterblocks.zip \
-    && unzip censuswaterblocks.zip \
-    && rm -f censuswaterblocks.zip \
-    && curl -LO http://www2.census.gov/geo/tiger/TIGER2010BLKPOPHU/tabblock2010_04_pophu.zip \
-    && unzip tabblock2010_04_pophu.zip \
-    && rm -f tabblock2010_04_pophu.zip \
-    && for f in tabblock2010_04_pophu.*; do mv "$f" "${f/tabblock2010_04_pophu/population}"; done \

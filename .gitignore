@@ -2,5 +2,5 @@
 .ruff_cache
 .venv
 .vscode
-test
+tests/samples/
 output
