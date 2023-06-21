@@ -10,7 +10,7 @@ Start and stop a clean docker-compose:
 
 ```bash
 docker-compose up
-docker-compose rm -f
+docker-compose rm -sfv
 ```
 
 Use the brokenspoke-analyzer to fetch the data to import into the BNA:

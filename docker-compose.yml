@@ -2,6 +2,8 @@ version: "3"
 services:
   postgres:
     image: bna:mechanics
+    build:
+      dockerfile: ./Dockerfile
     environment:
         POSTGRES_PASSWORD: postgres
         POSTGRES_USER: postgres
