@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Bootcamp",
+      "Group": "Bootcamp",
+      "Username": "bootcamp",
+      "Host": "postgres",
+      "Port": 5432,
+      "SSLMode": "prefer",
+      "MaintenanceDB": "postgres"
+    }
+  }
+}
