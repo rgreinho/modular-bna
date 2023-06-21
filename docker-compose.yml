@@ -2,6 +2,7 @@ version: "3"
 services:
   postgres:
     image: bna:mechanics
+    shm_size: 1g
     build:
       dockerfile: ./Dockerfile
     environment:
