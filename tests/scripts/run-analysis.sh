@@ -2,15 +2,6 @@
 set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
-# Define the city to analyse.
-# This is the only section that shouldbe edited!
-# BNA_CITY="provincetown"
-# BNA_SHORT_STATE="ma"
-# BNA_FULL_STATE="massachusetts"
-# BNA_STATE_FIPS=25
-# BNA_CITY_FIPS=555535
-# BNA_COUNTRY="USA"
-
 # Define the root of this repository.
 GIT_ROOT=$(git rev-parse --show-toplevel)
 

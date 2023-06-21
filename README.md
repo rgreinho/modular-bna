@@ -36,3 +36,12 @@ To clean up the variables before running a new analysis (optional, just to be sa
 ```bash
 unset BNA_CITY BNA_CITY BNA_FULL_STATE BNA_CITY_FIPS BNA_COUNTRY BNA_SHORT_STATE BNA_STATE_FIPS
 ```
+
+Run the analysis with the original bna:
+
+```bash
+bna analyze massachusetts \
+  tests/samples/provincetown-massachusetts/data/provincetown-massachusetts.shp \
+  tests/samples/provincetown-massachusetts/data/provincetown-massachusetts.osm \
+  --output-dir tests/samples/provincetown-massachusetts/outputs
+```
