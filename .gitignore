@@ -2,5 +2,8 @@
 .ruff_cache
 .venv
 .vscode
-tests/samples/
+cache/
+nb.ipynb
 output
+tests/__pycache__/
+tests/samples/

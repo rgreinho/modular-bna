@@ -11,6 +11,7 @@ Start and stop a clean docker-compose:
 ```bash
 docker-compose up
 docker-compose rm -sfv
+docker volume rm modular-bna_postgres
 ```
 
 Use the brokenspoke-analyzer to fetch the data to import into the BNA:
