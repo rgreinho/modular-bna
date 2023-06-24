@@ -89,7 +89,7 @@ mkdir -p "${SPEED_TEMPDIR}"
 # Import state residential speeds file
 STATE_SPEED_FILENAME="state_fips_speed"
 STATE_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${STATE_SPEED_FILENAME}.csv"
-psql -c "\copy state_speed FROM ${STATE_SPEED_DOWNLOAD} delimiter ',' csv header"
+psql -c "\copy state_speed FROM '${STATE_SPEED_DOWNLOAD}' delimiter ',' csv header"
 
 # Set default residential speed for state
 STATE_DEFAULT=$(psql -t -c "SELECT state_speed.speed FROM state_speed WHERE state_speed.fips_code_state = '${PFB_STATE_FIPS}'")
@@ -103,7 +103,7 @@ echo 'START: Importing City Default Speed Table'
 
 CITY_SPEED_FILENAME="city_fips_speed"
 CITY_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${CITY_SPEED_FILENAME}.csv"
-psql -c "\copy city_speed FROM ${CITY_SPEED_DOWNLOAD} delimiter ',' csv header"
+psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
 
 # Set default residential speed for city
 CITY_DEFAULT=$(psql -t -c "SELECT city_speed.speed FROM city_speed WHERE city_speed.fips_code_city = '${PFB_CITY_FIPS}'")
