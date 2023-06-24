@@ -19,18 +19,18 @@ DELTA = 0.05
 @pytest.mark.asyncio
 async def test_provincetown_ma():
     """Compare the results for the city of Provincetown, MA."""
-    await compare("USA", "massachusetts", "provincetown", "555535")
+    await compare("usa", "massachusetts", "provincetown", "555535")
 
 
 @pytest.mark.asyncio
 async def test_flagstaff_az():
     """Compare the results for the city of Flagstaff, AZ."""
-    await compare("USA", "arizona", "flagstaff", "0")
+    await compare("usa", "arizona", "flagstaff", "0")
 
 
 @pytest.mark.asyncio
 async def test_valencia_spain():
-    """Compare the results for the city of Flagstaff, AZ."""
+    """Compare the results for the city of Valencia, Spain."""
     await compare("spain", "valencia", "valencia", "0")
 
 
@@ -73,28 +73,32 @@ async def compare(country, state, city, city_fips):
     )
 
     # Compute the results with the modular BNA.
-    env = os.environ.update(
-        {
-            "BNA_CITY": city,
-            "BNA_FULL_STATE": state,
-            "BNA_CITY_FIPS": city_fips,
-            "BNA_COUNTRY": country,
-            "BNA_SHORT_STATE": state_abbrev,
-            "BNA_STATE_FIPS": state_fips,
-            "RUN_IMPORT_JOBS": run_import_jobs,
-        }
-    )
     try:
-        subprocess.run(["docker-compose", "up", "-d"])
-    except:
-        subprocess.run(["docker", " compose", "up", "-d"])
-    subprocess.run("until pg_isready ; do sleep 5 ; done", shell=True, check=True)
-    subprocess.run(["tests/scripts/run-analysis.sh"], shell=True, check=True, env=env)
-    try:
-        subprocess.run(["docker-compose", "rm", "-sfv"])
-    except:
-        subprocess.run(["docker", "compose", "rm", "-sfv"])
-    subprocess.run(["docker", "volume", "rm", "modular-bna_postgres"])
+        env = os.environ.update(
+            {
+                "BNA_CITY": city,
+                "BNA_FULL_STATE": state,
+                "BNA_CITY_FIPS": city_fips,
+                "BNA_COUNTRY": country,
+                "BNA_SHORT_STATE": state_abbrev,
+                "BNA_STATE_FIPS": state_fips,
+                "RUN_IMPORT_JOBS": run_import_jobs,
+            }
+        )
+        try:
+            subprocess.run(["docker-compose", "up", "-d"])
+        except:
+            subprocess.run(["docker", "compose", "up", "-d"])
+        subprocess.run("until pg_isready ; do sleep 5 ; done", shell=True, check=True)
+        subprocess.run(
+            ["tests/scripts/run-analysis.sh"], shell=True, check=True, env=env
+        )
+    finally:
+        try:
+            subprocess.run(["docker-compose", "rm", "-sfv"])
+        except:
+            subprocess.run(["docker", "compose", "rm", "-sfv"])
+        subprocess.run(["docker", "volume", "rm", "modular-bna_postgres"])
 
     # Combine the results.
     modular_bna_df = pd.read_csv(
