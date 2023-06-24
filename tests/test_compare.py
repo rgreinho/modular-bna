@@ -4,11 +4,14 @@ import pathlib
 import shutil
 import subprocess
 
-from brokenspoke_analyzer.core import analysis
-from brokenspoke_analyzer import cli
-from dotenv import load_dotenv
-import pytest
 import pandas as pd
+import pytest
+from brokenspoke_analyzer import cli
+from brokenspoke_analyzer.core import (
+    analysis,
+    processhelper,
+)
+from dotenv import load_dotenv
 
 DELTA = 0.05
 
@@ -17,6 +20,18 @@ DELTA = 0.05
 async def test_provincetown_ma():
     """Compare the results for the city of Provincetown, MA."""
     await compare("USA", "massachusetts", "provincetown", "555535")
+
+
+@pytest.mark.asyncio
+async def test_flagstaff_az():
+    """Compare the results for the city of Flagstaff, AZ."""
+    await compare("USA", "arizona", "flagstaff", "0")
+
+
+@pytest.mark.asyncio
+async def test_valencia_spain():
+    """Compare the results for the city of Flagstaff, AZ."""
+    await compare("spain", "valencia", "valencia", "0")
 
 
 async def compare(country, state, city, city_fips):
@@ -30,7 +45,18 @@ async def compare(country, state, city, city_fips):
     modular_bna_output_dir.mkdir(parents=True, exist_ok=True)
 
     # Derive some city information.
-    state_abbrev, state_fips = analysis.state_info(state)
+    try:
+        run_import_jobs = 1
+        if state:
+            state_abbrev, state_fips = analysis.state_info(state)
+        else:
+            state_abbrev, state_fips = analysis.state_info(country)
+    except ValueError:
+        run_import_jobs = 0
+        state_abbrev, state_fips = (
+            processhelper.NON_US_STATE_ABBREV,
+            processhelper.NON_US_STATE_FIPS,
+        )
 
     # Compute the results with the Brokenspoke-analyzer.
     # This will prepare the input data for the modular-bna at the same time,
@@ -55,12 +81,19 @@ async def compare(country, state, city, city_fips):
             "BNA_COUNTRY": country,
             "BNA_SHORT_STATE": state_abbrev,
             "BNA_STATE_FIPS": state_fips,
+            "RUN_IMPORT_JOBS": run_import_jobs,
         }
     )
-    subprocess.run(["docker-compose", "up", "-d"])
+    try:
+        subprocess.run(["docker-compose", "up", "-d"])
+    except:
+        subprocess.run(["docker", " compose", "up", "-d"])
     subprocess.run("until pg_isready ; do sleep 5 ; done", shell=True, check=True)
     subprocess.run(["tests/scripts/run-analysis.sh"], shell=True, check=True, env=env)
-    subprocess.run(["docker-compose", "rm", "-sfv"])
+    try:
+        subprocess.run(["docker-compose", "rm", "-sfv"])
+    except:
+        subprocess.run(["docker", "compose", "rm", "-sfv"])
     subprocess.run(["docker", "volume", "rm", "modular-bna_postgres"])
 
     # Combine the results.
