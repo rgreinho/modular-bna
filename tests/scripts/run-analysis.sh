@@ -27,6 +27,11 @@ export PFB_CITY_FIPS="${BNA_CITY_FIPS}"
 export PFB_STATE_FIPS="${BNA_STATE_FIPS}"
 export PFB_STATE="${BNA_SHORT_STATE}"
 export STATE_DEFAULT=30
+if [ "$PFB_STATE_FIPS" == "0" ];then
+  export RUN_IMPORT_JOBS=0
+else
+  export RUN_IMPORT_JOBS=1
+fi
 
 # Prepare.
 bash -x "${GIT_ROOT}/scripts/01-setup_database.sh"

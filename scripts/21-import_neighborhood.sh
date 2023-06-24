@@ -26,6 +26,7 @@ function import_and_transform_shapefile() {
 # Import neighborhood boundary
 import_and_transform_shapefile "${NB_BOUNDARY_FILE}" neighborhood_boundary "${NB_INPUT_SRID}"
 
+NB_COUNTRY=$(echo "$NB_COUNTRY" | tr '[:lower:]' '[:upper:]')
 if [ "${NB_COUNTRY}" == "USA" ]; then
   echo "IMPORTING: Downloading water blocks"
   psql <"${GIT_ROOT}/sql/create_us_water_blocks_table.sql"
