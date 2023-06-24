@@ -18,6 +18,7 @@ pytest-asyncio = "^0.21.0"
 python-dotenv = "^1.0.0"
 pandas = "^2.0.2"
 ipykernel = "^6.23.2"
+pytest-rerunfailures = "^11.1.2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -30,3 +31,8 @@ large_file_skip_byte_limit = 40000
 [tool.isort]
 profile = "black"
 force_grid_wrap = 2
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-p no:warnings --reruns 3 --reruns-delay 10"
+
