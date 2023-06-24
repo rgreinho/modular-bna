@@ -34,6 +34,12 @@ async def test_valencia_spain():
     await compare("spain", "valencia", "valencia", "0")
 
 
+@pytest.mark.asyncio
+async def test_santa_rosa_nm():
+    """Compare the results for the city of Santa Rosa, NM."""
+    await compare("usa", "new mexico", "santa rosa", "0")
+
+
 async def compare(country, state, city, city_fips):
     # Load the environment variables.
     load_dotenv()
