@@ -39,18 +39,18 @@ SCORE_TRANSIT="${SCORE_TRANSIT:-15}"
 export TIME="\nTIMING: %C\nTIMING:\t%E elapsed %Kkb mem\n"
 
 echo "BUILDING: Building network"
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -f "${GIT_ROOT}"/sql/connectivity/build_network.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v block_road_buffer="${BLOCK_ROAD_BUFFER}" \
   -v block_road_min_length="${BLOCK_ROAD_MIN_LENGTH}" \
   -f "${GIT_ROOT}"/sql/connectivity/census_blocks.sql
 
 echo "CONNECTIVITY: Reachable roads high stress"
-/usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_prep.sql
+time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_prep.sql
 
-# /usr/bin/time parallel<<EOF
+# time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
@@ -61,12 +61,12 @@ psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_calc.sql
 # EOF
 
-/usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_cleanup.sql
+time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_high_stress_cleanup.sql
 
 echo "CONNECTIVITY: Reachable roads low stress"
-/usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_prep.sql
+time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_prep.sql
 
-# /usr/bin/time parallel<<EOF
+# time parallel<<EOF
 psql -v thread_num=8 -v thread_no=0 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=1 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 psql -v thread_num=8 -v thread_no=2 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
@@ -77,10 +77,10 @@ psql -v thread_num=8 -v thread_no=6 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTA
 psql -v thread_num=8 -v thread_no=7 -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_calc.sql
 # EOF
 
-/usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_cleanup.sql
+time psql -f "${GIT_ROOT}"/sql/connectivity/reachable_roads_low_stress_cleanup.sql
 
 echo "CONNECTIVITY: Connected census blocks"
-/usr/bin/time psql -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" \
+time psql -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" \
   -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -f "${GIT_ROOT}"/sql/connectivity/connected_census_blocks.sql
 
@@ -88,7 +88,7 @@ echo "CONNECTIVITY: Connected census blocks"
 #    psql:/Users/rgreinhofer/projects/rgreinho/modular-bna/sql/connectivity/access_population.sql:84: ERROR:  syntax error at or near ":"
 #    LINE 6:     WHEN pop_high_stress = pop_low_stress THEN: max_score
 echo "METRICS: Access: population"
-/usr/bin/time psql\
+time psql\
   -v max_score=1 \
   -v step1=0.03 \
   -v score1=0.1 \
@@ -100,9 +100,9 @@ echo "METRICS: Access: population"
 
 if [ "$RUN_IMPORT_JOBS" = "1" ]; then
   echo "METRICS: Access: jobs"
-  /usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/census_block_jobs.sql
+  time psql -f "${GIT_ROOT}"/sql/connectivity/census_block_jobs.sql
 
-  /usr/bin/time psql -v max_score=1 \
+  time psql -v max_score=1 \
     -v step1=0.03 \
     -v score1=0.1 \
     -v step2=0.2 \
@@ -113,123 +113,123 @@ if [ "$RUN_IMPORT_JOBS" = "1" ]; then
 fi
 
 echo "METRICS: Destinations"
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_COLLEGES}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/colleges.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_COMM_CTR}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/community_centers.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_DOCTORS}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/doctors.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_DENTISTS}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/dentists.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_HOSPITALS}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/hospitals.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_PHARMACIES}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/pharmacies.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_PARKS}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/parks.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_RETAIL}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/retail.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/schools.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/social_services.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/supermarkets.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_TRANSIT}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/transit.sql
 
-/usr/bin/time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
+time psql -v nb_output_srid="${NB_OUTPUT_SRID}" \
   -v cluster_tolerance="${TOLERANCE_UNIVERSITIES}" \
   -f "${GIT_ROOT}"/sql/connectivity/destinations/universities.sql
 
 echo "METRICS: Access: colleges"
-/usr/bin/time psql -v first=0.7 \
+time psql -v first=0.7 \
   -v second=0 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_colleges.sql
 
-/usr/bin/time psql -v first=0.4 \
+time psql -v first=0.4 \
   -v second=0.2 \
   -v third=0.1 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_community_centers.sql
 
-/usr/bin/time psql -v first=0.4 \
+time psql -v first=0.4 \
   -v second=0.2 \
   -v third=0.1 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_doctors.sql
 
-/usr/bin/time psql -v first=0.4 \
+time psql -v first=0.4 \
   -v second=0.2 \
   -v third=0.1 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_dentists.sql
 
-/usr/bin/time psql -v first=0.7 \
+time psql -v first=0.7 \
   -v second=0 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_hospitals.sql
 
-/usr/bin/time psql -v first=0.4 \
+time psql -v first=0.4 \
   -v second=0.2 \
   -v third=0.1 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_pharmacies.sql
 
-/usr/bin/time psql -v first=0.3 \
+time psql -v first=0.3 \
   -v second=0.2 \
   -v third=0.2 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_parks.sql
 
-/usr/bin/time psql -v first=0.4 \
+time psql -v first=0.4 \
   -v second=0.2 \
   -v third=0.1 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_retail.sql
 
-/usr/bin/time psql -v first=0.3 \
+time psql -v first=0.3 \
   -v second=0.2 \
   -v third=0.2 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_schools.sql
 
-/usr/bin/time psql -v first=0.7 \
+time psql -v first=0.7 \
   -v second=0 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_social_services.sql
 
-/usr/bin/time psql -v first=0.6 \
+time psql -v first=0.6 \
   -v second=0.2 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_supermarkets.sql
 
-/usr/bin/time psql -v first=0.7 \
+time psql -v first=0.7 \
   -v second=0.2 \
   -v third=0 \
   -v max_score=1 \
@@ -237,19 +237,19 @@ echo "METRICS: Access: colleges"
   -v min_bbox_length="${MIN_PATH_BBOX}" \
   -f "${GIT_ROOT}"/sql/connectivity/access_trails.sql
 
-/usr/bin/time psql -v first=0.6 \
+time psql -v first=0.6 \
   -v second=0 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_transit.sql
 
-/usr/bin/time psql -v first=0.7 \
+time psql -v first=0.7 \
   -v second=0 \
   -v third=0 \
   -v max_score=1 \
   -f "${GIT_ROOT}"/sql/connectivity/access_universities.sql
 
-/usr/bin/time psql -v total="${SCORE_TOTAL}" \
+time psql -v total="${SCORE_TOTAL}" \
   -v people="${SCORE_PEOPLE}" \
   -v opportunity="${SCORE_OPPORTUNITY}" \
   -v core_services="${SCORE_CORESVCS}" \
@@ -258,10 +258,10 @@ echo "METRICS: Access: colleges"
   -v transit="${SCORE_TRANSIT}" \
   -f "${GIT_ROOT}"/sql/connectivity/access_overall.sql
 
-/usr/bin/time psql -f "${GIT_ROOT}"/sql/connectivity/score_inputs.sql
+time psql -f "${GIT_ROOT}"/sql/connectivity/score_inputs.sql
 
 echo "METRICS: Overall scores"
-/usr/bin/time psql -v total="${SCORE_TOTAL}" \
+time psql -v total="${SCORE_TOTAL}" \
   -v people="${SCORE_PEOPLE}" \
   -v opportunity="${SCORE_OPPORTUNITY}" \
   -v core_services="${SCORE_CORESVCS}" \
