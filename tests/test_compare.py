@@ -46,13 +46,13 @@ async def compare(country, state, city, city_fips):
 
     # Derive some city information.
     try:
-        run_import_jobs = 1
+        run_import_jobs = "1"
         if state:
             state_abbrev, state_fips = analysis.state_info(state)
         else:
             state_abbrev, state_fips = analysis.state_info(country)
     except ValueError:
-        run_import_jobs = 0
+        run_import_jobs = "0"
         state_abbrev, state_fips = (
             processhelper.NON_US_STATE_ABBREV,
             processhelper.NON_US_STATE_FIPS,
