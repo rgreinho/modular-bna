@@ -37,9 +37,19 @@ force_grid_wrap = 2
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-p no:warnings --reruns 5 --reruns-delay 15 --template=html1/index.html --report=report.html"
+addopts = """
+  -p no:warnings \
+  --reruns 5 --reruns-delay 15 --rerun-except AssertionError \
+  --template=html1/index.html --report=report.html
+"""
 markers = [
     "europe",
     "spain",
     "usa",
+    "xs: run under 5min",
+    "s: run under 15min",
+    "m: run under 60min (1h)",
+    "l: run under 360min (6h)",
+    "xl: run under 720min (12h)",
+    "xxl: run under 1440min (24h / 1day)",
 ]
