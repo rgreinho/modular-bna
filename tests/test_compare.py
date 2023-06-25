@@ -86,7 +86,7 @@ async def compare(country, state, city, city_fips):
                 "BNA_FULL_STATE": state,
                 "BNA_CITY_FIPS": city_fips,
                 "BNA_COUNTRY": country,
-                "BNA_SHORT_STATE": state_abbrev,
+                "BNA_SHORT_STATE": state_abbrev.lower(),
                 "BNA_STATE_FIPS": state_fips,
                 "RUN_IMPORT_JOBS": run_import_jobs,
             }
