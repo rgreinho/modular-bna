@@ -45,3 +45,11 @@ fmt-sql:
 # Build the test Docker image.
 docker-build:
    docker buildx build -t bna:mechanics .
+
+# Test all the cities.
+test:
+  poetry run pytest -v
+
+# Test only the US cities.
+test-usa:
+  poetry run pytest -v -m usa

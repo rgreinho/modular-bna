@@ -39,5 +39,7 @@ force_grid_wrap = 2
 minversion = "6.0"
 addopts = "-p no:warnings --reruns 5 --reruns-delay 15 --template=html1/index.html --report=report.html"
 markers = [
+    "europe",
+    "spain",
     "usa",
 ]

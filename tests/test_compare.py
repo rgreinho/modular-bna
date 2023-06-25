@@ -16,24 +16,29 @@ from dotenv import load_dotenv
 DELTA = 0.05
 
 
+@pytest.mark.usa
 @pytest.mark.asyncio
 async def test_provincetown_ma():
     """Compare the results for the city of Provincetown, MA."""
     await compare("usa", "massachusetts", "provincetown", "555535")
 
 
+@pytest.mark.usa
 @pytest.mark.asyncio
 async def test_flagstaff_az():
     """Compare the results for the city of Flagstaff, AZ."""
     await compare("usa", "arizona", "flagstaff", "0")
 
 
+@pytest.mark.spain
+@pytest.mark.europe
 @pytest.mark.asyncio
 async def test_valencia_spain():
     """Compare the results for the city of Valencia, Spain."""
     await compare("spain", "valencia", "valencia", "0")
 
 
+@pytest.mark.usa
 @pytest.mark.asyncio
 async def test_santa_rosa_nm():
     """Compare the results for the city of Santa Rosa, NM."""
