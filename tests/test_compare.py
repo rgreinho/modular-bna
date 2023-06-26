@@ -13,7 +13,10 @@ from brokenspoke_analyzer.core import (
 )
 from dotenv import load_dotenv
 
-DELTA = 0.1
+# Since we multiply the BNA score by 100 to get integer numbers and avoiding
+# floating number operations, the delta must also be multiplied by 100.
+# As a result, a delta of 10 means 0.1%.
+DELTA = 10
 
 
 @pytest.mark.usa
@@ -60,13 +63,14 @@ async def test_crested_butte_co():
 
 
 @pytest.mark.usa
+@pytest.mark.l
 @pytest.mark.asyncio
 async def test_washington_dc():
     """Compare the results for the city of Washington, DC."""
     await compare("usa", "district of columbia", "washington", "0")
 
 
-async def compare(country, state, city, city_fips):
+async def compare(country: str, state: str, city: str, city_fips: str) -> None:
     # Load the environment variables.
     load_dotenv()
 
@@ -130,7 +134,7 @@ async def compare(country, state, city, city_fips):
             subprocess.run(["docker-compose", "rm", "-sfv"])
         except:
             subprocess.run(["docker", "compose", "rm", "-sfv"])
-        subprocess.run(["docker", "volume", "rm", "modular-bna_postgres"])
+        subprocess.run(["docker", "volume", "rm", "-f", "modular-bna_postgres"])
 
     # Combine the results.
     modular_bna_df = pd.read_csv(
@@ -153,10 +157,10 @@ async def compare(country, state, city, city_fips):
     df = df.dropna()
 
     # Compute the deltas.
-    df["delta"] = df["modular"] - df["original"]
+    df["delta"] = (df["modular"] * 100).astype(int) - (df["original"] * 100).astype(int)
 
     # Export for human consumption.
-    df.to_csv(output_dir / "compare.csv")
+    df.to_csv(output_dir / f"compare-{city}-{state}.csv")
 
     # Assert the deltas are within range.
     assert all(df.delta.apply(lambda x: -DELTA <= x <= DELTA))

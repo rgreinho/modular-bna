@@ -8,11 +8,15 @@ sql_dir := "sql"
 ci: lint
 
 # Meta task running all the linters at once.
-lint: lint-bash lint-python lint-sql
+lint: lint-bash lint-md lint-python lint-sql
 
 # Lint bash files.
 lint-bash:
     shellcheck {{ script_dir }}/*.sh
+
+# Lint markown files.
+lint-md:
+    npx --yes markdownlint-cli2 "**/*.md" "#.venv"
 
 #  Lint python files.
 lint-python:
@@ -25,11 +29,15 @@ lint-sql:
     poetry run sqlfluff lint {{ sql_dir }}
 
 # Meta tasks running all formatters at once.
-fmt: fmt-bash fmt-python fmt-sql
+fmt: fmt-bash fmt-md fmt-python fmt-sql
 
 # Format bash files.
 fmt-bash:
     shfmt --list -write {{ script_dir }}
+
+# Format markdown files.
+fmt-md:
+    npx --yes prettier --write --prose-wrap always **/*.md
 
 # Format python files.
 fmt-python:

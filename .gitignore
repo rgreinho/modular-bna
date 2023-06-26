@@ -5,6 +5,7 @@
 cache/
 nb.ipynb
 output
+pytest-html-report.html
 report.html
 tests/__pycache__/
 tests/samples/

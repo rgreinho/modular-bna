@@ -40,7 +40,8 @@ minversion = "6.0"
 addopts = """
   -p no:warnings \
   --reruns 5 --reruns-delay 15 --rerun-except AssertionError \
-  --template=html1/index.html --report=report.html
+  --template=html1/index.html --report=report.html \
+  --html=pytest-html-report.html --self-contained-html
 """
 markers = [
     "europe",
