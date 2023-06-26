@@ -117,7 +117,7 @@ async def compare(country: str, state: str, city: str, city_fips: str) -> None:
                 "BNA_CITY_FIPS": city_fips,
                 "BNA_COUNTRY": country,
                 "BNA_SHORT_STATE": state_abbrev.lower(),
-                "BNA_STATE_FIPS": state_fips,
+                "BNA_STATE_FIPS": str(state_fips),
                 "RUN_IMPORT_JOBS": run_import_jobs,
             }
         )
