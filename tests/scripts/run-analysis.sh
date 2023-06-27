@@ -38,7 +38,9 @@ bash -x "${GIT_ROOT}/scripts/01-setup_database.sh"
 
 # Import.
 bash -x "${GIT_ROOT}/scripts/21-import_neighborhood.sh"
-bash -x "${GIT_ROOT}/scripts/22-import_jobs.sh"
+if [ "${RUN_IMPORT_JOBS}" == "1" ]; then
+  bash -x "${GIT_ROOT}/scripts/22-import_jobs.sh"
+fi
 bash -x "${GIT_ROOT}/scripts/23-import_osm.sh" "${BNA_OSM_FILE}"
 
 # Compute.
