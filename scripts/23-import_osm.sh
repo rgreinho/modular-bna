@@ -89,10 +89,12 @@ mkdir -p "${SPEED_TEMPDIR}"
 # Import state residential speeds file
 STATE_SPEED_FILENAME="state_fips_speed"
 STATE_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${STATE_SPEED_FILENAME}.csv"
-psql -c "\copy state_speed FROM '${STATE_SPEED_DOWNLOAD}' delimiter ',' csv header"
+if [ -e "${STATE_SPEED_DOWNLOAD}" ]; then
+  psql -c "\copy state_speed FROM '${STATE_SPEED_DOWNLOAD}' delimiter ',' csv header"
+  # Set default residential speed for state
+  STATE_DEFAULT=$(psql -t -c "SELECT state_speed.speed FROM state_speed WHERE state_speed.fips_code_state = '${PFB_STATE_FIPS}'")
+fi
 
-# Set default residential speed for state
-STATE_DEFAULT=$(psql -t -c "SELECT state_speed.speed FROM state_speed WHERE state_speed.fips_code_state = '${PFB_STATE_FIPS}'")
 if [ -z "$STATE_DEFAULT" ]; then
   STATE_DEFAULT=NULL
 fi
@@ -100,13 +102,13 @@ echo "DONE: Importing state default residential speed"
 
 # Create table for city residential speeds
 echo 'START: Importing City Default Speed Table'
-
 CITY_SPEED_FILENAME="city_fips_speed"
 CITY_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${CITY_SPEED_FILENAME}.csv"
-psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
-
-# Set default residential speed for city
-CITY_DEFAULT=$(psql -t -c "SELECT city_speed.speed FROM city_speed WHERE city_speed.fips_code_city = '${PFB_CITY_FIPS}'")
+if [ -e "${CITY_SPEED_DOWNLOAD}" ]; then
+  psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
+  # Set default residential speed for city
+  CITY_DEFAULT=$(psql -t -c "SELECT city_speed.speed FROM city_speed WHERE city_speed.fips_code_city = '${PFB_CITY_FIPS}'")
+fi
 
 if [ -n "${PFB_RESIDENTIAL_SPEED_LIMIT}" ]; then
   # If the speed limit is provided, set/override the city speed limit with that.
