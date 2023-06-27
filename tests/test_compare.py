@@ -97,16 +97,21 @@ async def compare(country: str, state: str, city: str, city_fips: str) -> None:
     # Compute the results with the Brokenspoke-analyzer.
     # This will prepare the input data for the modular-bna at the same time,
     # therefore reducing the processing time and saving disk space.
-    await cli.prepare_and_run(
-        country,
-        state,
-        city,
-        output_dir.absolute(),
-        docker_image="azavea/pfb-network-connectivity:0.18.0",
-        speed_limit=50,
-        block_size=500,
-        block_population=100,
-    )
+    CONTAINER_NAME = "brokenspoke_analyzer"
+    try:
+        await cli.prepare_and_run(
+            country,
+            state,
+            city,
+            output_dir.absolute(),
+            docker_image="azavea/pfb-network-connectivity:0.18.0",
+            speed_limit=50,
+            block_size=500,
+            block_population=100,
+            container_name=CONTAINER_NAME,
+        )
+    finally:
+        subprocess.run(["docker", "stop", CONTAINER_NAME])
 
     # Compute the results with the modular BNA.
     try:
