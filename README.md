@@ -88,15 +88,15 @@ for the full explanation, other simply consider them as labels.
 
 #### Duration marker: T-shirt sizes
 
-The BNA runs were measured on our test machine, and categorized per their
+The test runs were measured on our test machine, and categorized per their
 durations as follow:
 
 - XS: runs under 5 min
 - S: runs under 15 min
 - M: runs under 60 min
-- L: runs under 360 min (1/4 day)
-- XL: runs under 720 min (1/2 day)
-- XXL: runs under 1440 min (1 day)
+- L: runs under 180 min (1/8 day)
+- XL: runs under 360 min (1/4 day)
+- XXL: runs under 720 min (1/2 day)
 
 Since a full test is composed of 2 BNA runs, a test run takes about twice as
 long as a running a BNA analysis.
