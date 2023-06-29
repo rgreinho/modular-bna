@@ -35,7 +35,7 @@ async def test_provincetown_ma():
 )
 async def test_flagstaff_az():
     """Compare the results for the city of Flagstaff, AZ."""
-    await compare("usa", "arizona", "flagstaff", "0")
+    await compare("usa", "arizona", "flagstaff", "423620")
 
 
 @pytest.mark.spain
@@ -51,7 +51,7 @@ async def test_valencia_spain():
 @pytest.mark.asyncio
 async def test_santa_rosa_nm():
     """Compare the results for the city of Santa Rosa, NM."""
-    await compare("usa", "new mexico", "santa rosa", "0")
+    await compare("usa", "new mexico", "santa rosa", "3570670")
 
 
 @pytest.mark.usa
@@ -59,7 +59,7 @@ async def test_santa_rosa_nm():
 @pytest.mark.asyncio
 async def test_crested_butte_co():
     """Compare the results for the city of Crested Butte, CO."""
-    await compare("usa", "colorado", "crested butte", "0")
+    await compare("usa", "colorado", "crested butte", "818310")
 
 
 @pytest.mark.usa
@@ -67,8 +67,10 @@ async def test_crested_butte_co():
 @pytest.mark.asyncio
 async def test_washington_dc():
     """Compare the results for the city of Washington, DC."""
-    await compare("usa", "district of columbia", "washington", "0")
+    await compare("usa", "district of columbia", "washington", "1150000")
 
+def test_test():
+    assert False
 
 async def compare(country: str, state: str, city: str, city_fips: str) -> None:
     # Load the environment variables.

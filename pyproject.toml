@@ -39,7 +39,7 @@ force_grid_wrap = 2
 minversion = "6.0"
 addopts = """
   -p no:warnings \
-  --reruns 5 --reruns-delay 15 --rerun-except AssertionError \
+  --reruns 4 --reruns-delay 15 --rerun-except AssertionError \
   --template=html1/index.html --report=report.html \
 """
 markers = [
