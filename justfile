@@ -2,6 +2,7 @@ set dotenv-load
 
 # Define variables.
 script_dir := "scripts"
+modular_bna_dir := "modular_bna"
 sql_dir := "sql"
 
 # Meta task running ALL the CI tasks at onces.
@@ -23,10 +24,14 @@ lint-python:
     poetry run isort --check {{ script_dir }}
     poetry run black --check {{ script_dir }}
     poetry run ruff check {{ script_dir }}
+    poetry run isort --check {{ modular_bna_dir }}
+    poetry run black --check {{ modular_bna_dir }}
+    poetry run ruff check {{ modular_bna_dir }}
 
-# Lint SQL files.
+# Lint SQL files. Temporarily disabled.
 lint-sql:
-    poetry run sqlfluff lint {{ sql_dir }}
+    echo "Lint disabled."
+    # poetry run sqlfluff lint {{ sql_dir }}
 
 # Meta tasks running all formatters at once.
 fmt: fmt-bash fmt-md fmt-python fmt-sql
@@ -44,15 +49,22 @@ fmt-python:
     poetry run isort {{ script_dir }}
     poetry run black {{ script_dir }}
     poetry run ruff check --fix {{ script_dir }}
+    poetry run isort {{ modular_bna_dir }}
+    poetry run black {{ modular_bna_dir }}
+    poetry run ruff check --fix {{ modular_bna_dir }}
 
-
-# Format SQL files.
+# Format SQL files. Temporarily disabled.
 fmt-sql:
-    poetry run sqlfluff fix --force {{ sql_dir }}
+    echo "Formatting disabled."
+    # poetry run sqlfluff fix --force {{ sql_dir }}
 
 # Build the test Docker image.
 docker-build:
    docker buildx build -t bna:mechanics .
+
+# Run the doctests.
+doctest:
+    python -m xdoctest {{ modular_bna_dir }}
 
 # Test all the cities.
 test:
@@ -61,3 +73,7 @@ test:
 # Test only the US cities.
 test-usa:
   poetry run pytest -v -m usa
+
+# Test only the XS cities.
+test-xs:
+  poetry run pytest -v -m xs

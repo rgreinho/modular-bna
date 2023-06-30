@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bna"
+name = "modular_bna"
 version = "0.1.0"
 description = ""
 authors = ["Rémy Greinhofer <remy.greinhofer@gmail.com>"]
@@ -22,6 +22,7 @@ pytest-rerunfailures = "^11.1.2"
 pip = "^23.1.2"
 install = "^1.3.5"
 pytest-reporter-html1 = "^0.8.3"
+xdoctest = "^1.1.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -39,7 +40,7 @@ force_grid_wrap = 2
 minversion = "6.0"
 addopts = """
   -p no:warnings \
-  --reruns 4 --reruns-delay 15 --rerun-except AssertionError \
+  --reruns 4 --reruns-delay 15 --rerun-except assert \
   --template=html1/index.html --report=report.html \
 """
 markers = [

@@ -88,8 +88,7 @@ time psql -v nb_max_trip_distance="${NB_MAX_TRIP_DISTANCE}" \
 #    psql:/Users/rgreinhofer/projects/rgreinho/modular-bna/sql/connectivity/access_population.sql:84: ERROR:  syntax error at or near ":"
 #    LINE 6:     WHEN pop_high_stress = pop_low_stress THEN: max_score
 echo "METRICS: Access: population"
-time psql\
-  -v max_score=1 \
+time psql -v max_score=1 \
   -v step1=0.03 \
   -v score1=0.1 \
   -v step2=0.2 \
