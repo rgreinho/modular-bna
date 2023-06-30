@@ -32,6 +32,7 @@ async def test_flagstaff_az():
 
 @pytest.mark.spain
 @pytest.mark.europe
+@pytest.mark.xl
 @pytest.mark.asyncio
 async def test_valencia_spain():
     """Compare the results for the city of Valencia, Spain."""
@@ -61,6 +62,62 @@ async def test_crested_butte_co():
 async def test_washington_dc():
     """Compare the results for the city of Washington, DC."""
     await assert_compare("washington", "district of columbia", "usa", "1150000")
+
+
+@pytest.mark.canada
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_l_ancienne_lorette_qc():
+    """Compare the results of L'Ancienne-Lorette, QC."""
+    await assert_compare("ancienne-lorette", "québec", "canada", "0")
+
+
+@pytest.mark.usa
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_st_louis_park_mn():
+    """Compare the results of St. Louis Park, MN."""
+    await assert_compare("st. louis park", "minnesota", "usa", "2757220")
+
+
+@pytest.mark.france
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_chambery_france():
+    """Compare the results of Chambéry, France."""
+    await assert_compare("chambéry", "auvergne", "France", "0")
+
+
+@pytest.mark.usa
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_arcata_ca():
+    """Compare the results of Arcata, CA."""
+    await assert_compare("arcata", "california", "usa", "602476")
+
+
+@pytest.mark.usa
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_rehoboth_beach_de():
+    """Compare the results of Rehoboth Beach, DE."""
+    await assert_compare("rehoboth beach", "delaware", "usa", "1060290")
+
+
+@pytest.mark.australia
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_orange_au():
+    """Compare the results of Orange, AU."""
+    await assert_compare("orange", "new south wales", "australia", "0")
+
+
+@pytest.mark.usa
+@pytest.mark.xs
+@pytest.mark.asyncio
+async def test_():
+    """Compare the results of Cañon City, CO."""
+    await assert_compare("cañon city", "colorado", "usa", "0811810")
 
 
 async def assert_compare(city: str, state: str, country: str, city_fips: str) -> None:

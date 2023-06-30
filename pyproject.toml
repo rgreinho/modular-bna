@@ -44,7 +44,10 @@ addopts = """
   --template=html1/index.html --report=report.html \
 """
 markers = [
+    "australia",
+    "canada",
     "europe",
+    "france",
     "spain",
     "usa",
     "xs: run under 5min",
