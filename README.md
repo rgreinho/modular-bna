@@ -132,7 +132,8 @@ Testing a city means only 2 things:
 - adding the appropriate markers
 - and calling the `compare` function with the right arguments
 
-[nuc6i7kyk]: https://www.intel.com/content/www/us/en/products/sku/89187/intel-nuc-kit-nuc6i7kyk/specifications.html
+[nuc6i7kyk]:
+  https://www.intel.com/content/www/us/en/products/sku/89187/intel-nuc-kit-nuc6i7kyk/specifications.html
 
 ## Running the modular BNA manually
 

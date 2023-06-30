@@ -1,11 +1,12 @@
+__pycache__/
 .DS_Store
 .ruff_cache
 .venv/
 .vscode/
+*.pyc
 cache/
 nb.ipynb
 output
 pytest-html-report.html
 report.html
-tests/__pycache__/
 tests/samples/

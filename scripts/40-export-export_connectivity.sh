@@ -41,7 +41,6 @@ NB_POSTGRESQL_PORT - Default: 5432
 "
 }
 
-
 function ec_export_table_shp() {
   OUTPUT_DIR="$1"
   EXPORT_TABLENAME="$2"
