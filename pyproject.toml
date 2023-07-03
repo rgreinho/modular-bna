@@ -7,21 +7,23 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
+better-exceptions = "^0.3.3"
+brokenspoke-analyzer = {git = "https://github.com/PeopleForBikes/brokenspoke-analyzer", rev = "main"}
+typer = "^0.9.0"
+loguru = "^0.7.0"
+python-dotenv = "^1.0.0"
+rich = "^13.4.2"
 
 [tool.poetry.group.dev.dependencies]
-sqlfluff = "^2.1.1"
 black = "^23.3.0"
-ruff = "^0.0.270"
-isort = "^5.12.0"
-brokenspoke-analyzer = {git = "https://github.com/PeopleForBikes/brokenspoke-analyzer", rev = "main"}
-pytest-asyncio = "^0.21.0"
-python-dotenv = "^1.0.0"
-pandas = "^2.0.2"
 ipykernel = "^6.23.2"
-pytest-rerunfailures = "^11.1.2"
-pip = "^23.1.2"
-install = "^1.3.5"
+isort = "^5.12.0"
+pandas = "^2.0.2"
+pytest-asyncio = "^0.21.0"
 pytest-reporter-html1 = "^0.8.3"
+pytest-rerunfailures = "^11.1.2"
+ruff = "^0.0.270"
+sqlfluff = "^2.1.1"
 xdoctest = "^1.1.1"
 
 [build-system]
@@ -50,10 +52,13 @@ markers = [
     "france",
     "spain",
     "usa",
-    "xs: run under 5min",
-    "s: run under 15min",
-    "m: run under 60min (1h)",
-    "l: run under 360min (6h)",
-    "xl: run under 720min (12h)",
-    "xxl: run under 1440min (24h / 1day)",
+    "xs: runs under 5min",
+    "s: runs under 15min",
+    "m: runs under 60min (1h)",
+    "l: runs under 180min (2h)",
+    "xl: runs under 360min (6h)",
+    "xxl: runs under 720min (12h / 1/2day)",
 ]
+
+[tool.poetry.scripts]
+modbna = 'modular_bna.cli:app'

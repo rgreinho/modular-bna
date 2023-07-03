@@ -4,13 +4,19 @@ import pathlib
 import shutil
 import subprocess
 import typing
+import unicodedata
 
 import pandas as pd
-from brokenspoke_analyzer import cli
+from brokenspoke_analyzer import cli as bsa_cli
 from brokenspoke_analyzer.core import (
     analysis,
     processhelper,
 )
+
+from modular_bna import cli
+
+CONTAINER_NAME = "brokenspoke_analyzer"
+DOCKER_IMAGE = "azavea/pfb-network-connectivity:0.18.0"
 
 
 def prepare_sample_folder(
@@ -28,9 +34,8 @@ def derive_state_info(state: str) -> typing.Tuple[str, str, str]:
     """
     Derive some city information.
 
-    Example:
+    Examples:
         >>> assert ("TX", "48", "1") == derive_state_info("texas")
-
         >>> assert ("ZZ", 0, "0") == derive_state_info("spain")
     """
     try:
@@ -69,21 +74,75 @@ def prepare_environment(
         >>>    "BNA_SHORT_STATE": "dc",
         >>>    "BNA_STATE_FIPS": "11",
         >>>    "RUN_IMPORT_JOBS": "1",
+        >>>    "NB_COUNTRY": "usa",
+        >>>    "PFB_CITY_FIPS": "1150000",
+        >>>    "PFB_STATE_FIPS": "11",
+        >>>    "PFB_STATE": "dc",
         >>> }
     """
+    normalized_city_fips = f"{city_fips:07}"
+    normalized_state = state_abbrev.lower()
+    normalized_state_fips = str(state_fips)
     return {
         "BNA_CITY": city,
         "BNA_FULL_STATE": state,
-        "BNA_CITY_FIPS": f"{city_fips:07}",
+        "BNA_CITY_FIPS": normalized_city_fips,
         "BNA_COUNTRY": country,
-        "BNA_SHORT_STATE": state_abbrev.lower(),
-        "BNA_STATE_FIPS": str(state_fips),
+        "BNA_SHORT_STATE": normalized_state,
+        "BNA_STATE_FIPS": normalized_state_fips,
         "RUN_IMPORT_JOBS": run_import_jobs,
+        "NB_COUNTRY": country,
+        "PFB_CITY_FIPS": normalized_city_fips,
+        "PFB_STATE_FIPS": normalized_state_fips,
+        "PFB_STATE": normalized_state,
     }
 
 
+async def brokenspoke_analyzer_run_prepare(
+    city: str,
+    state: str,
+    country: str,
+    output_dir: os.PathLike,
+    speed_limit: int = 50,
+):
+    """Run the prepare command of the brokenspoke-analyzer."""
+
+    return await cli.prepare_(
+        country,
+        state,
+        city,
+        output_dir,
+        speed_limit=speed_limit,
+        block_size=500,
+        block_population=100,
+    )
+
+
+def brokenspoke_analyzer_run_analyze(
+    state_abbrev: str,
+    state_fips: str,
+    city_shp: os.PathLike,
+    pfb_osm_file: os.PathLike,
+    output_dir: os.PathLike,
+):
+    """Run the analyze command of the brokenspoke-analyzer."""
+    cli.analyze_(
+        state_abbrev,
+        state_fips,
+        city_shp,
+        pfb_osm_file,
+        output_dir,
+        docker_image=DOCKER_IMAGE,
+        container_name=CONTAINER_NAME,
+    )
+
+
 async def brokenspoke_analyzer_run_n_cleanup(
-    city: str, state: str, country: str, output_dir: os.PathLike
+    city: str,
+    state: str,
+    country: str,
+    output_dir: os.PathLike,
+    speed_limit: int = 50,
 ) -> None:
     """
     Run the Brokenspoke analyzer.
@@ -91,15 +150,14 @@ async def brokenspoke_analyzer_run_n_cleanup(
     Clean up the container in case of failure.
     """
 
-    CONTAINER_NAME = "brokenspoke_analyzer"
     try:
-        await cli.prepare_and_run(
+        await bsa_cli.prepare_and_run(
             country,
             state,
             city,
             output_dir.absolute(),
-            docker_image="azavea/pfb-network-connectivity:0.18.0",
-            speed_limit=50,
+            docker_image=DOCKER_IMAGE,
+            speed_limit=speed_limit,
             block_size=500,
             block_population=100,
             container_name=CONTAINER_NAME,
@@ -108,7 +166,9 @@ async def brokenspoke_analyzer_run_n_cleanup(
         subprocess.run(["docker", "stop", CONTAINER_NAME])
 
 
-def modular_bna_run_n_clean_up(bna_env: typing.Mapping[str, str]) -> None:
+async def modular_bna_run_n_clean_up(
+    city: str, state: str, country: str, city_fips: str, prepare: bool = False
+) -> None:
     """
     Run the modular BNA.
 
@@ -116,20 +176,17 @@ def modular_bna_run_n_clean_up(bna_env: typing.Mapping[str, str]) -> None:
     of failure.
     """
     try:
-        env = os.environ.update(bna_env)
         try:
-            subprocess.run(["docker-compose", "up", "-d"])
+            subprocess.run(["docker-compose", "up", "-d"], check=True)
         except Exception:
-            subprocess.run(["docker", "compose", "up", "-d"])
+            subprocess.run(["docker", "compose", "up", "-d"], check=True)
         subprocess.run("until pg_isready ; do sleep 5 ; done", shell=True, check=True)
-        subprocess.run(
-            ["tests/scripts/run-analysis.sh"], shell=True, check=True, env=env
-        )
+        await cli.run_(city, state, country, city_fips, prepare)
     finally:
         try:
-            subprocess.run(["docker-compose", "rm", "-sfv"])
+            subprocess.run(["docker-compose", "rm", "-sfv"], check=True)
         except Exception:
-            subprocess.run(["docker", "compose", "rm", "-sfv"])
+            subprocess.run(["docker", "compose", "rm", "-sfv"], check=True)
         subprocess.run(["docker", "volume", "rm", "-f", "modular-bna_postgres"])
 
 
@@ -170,15 +227,8 @@ async def compare(city: str, state: str, country: str, city_fips: str) -> pd.Dat
     # therefore reducing the processing time and saving disk space.
     await brokenspoke_analyzer_run_n_cleanup(city, state, country, output_dir)
 
-    # Derive some city information.
-    st = state if state else country
-    state_abbrev, state_fips, run_import_jobs = derive_state_info(st)
-
     # Compute the results with the modular BNA.
-    env = prepare_environment(
-        city, state, country, city_fips, state_fips, state_abbrev, run_import_jobs
-    )
-    modular_bna_run_n_clean_up(env)
+    await modular_bna_run_n_clean_up(city, state, country, city_fips, False)
 
     # Combine the results.
     df = delta_df(output_dir, modular_bna_output_dir)
@@ -187,3 +237,10 @@ async def compare(city: str, state: str, country: str, city_fips: str) -> pd.Dat
     df.to_csv(output_dir / f"compare-{city}-{state}.csv")
 
     return df
+
+
+# This should be a function from the brokenspoke-analyzer.
+def normalize_unicode_name(value):
+    n = value.lower()
+    n = unicodedata.normalize("NFKD", n).encode("ascii", "ignore").decode("utf-8")
+    return n
