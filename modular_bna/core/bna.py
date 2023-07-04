@@ -7,7 +7,7 @@ import typing
 import unicodedata
 
 import pandas as pd
-from brokenspoke_analyzer import cli as bsa_cli
+from brokenspoke_analyzer import cli as bna_cli
 from brokenspoke_analyzer.core import (
     analysis,
     processhelper,
@@ -107,7 +107,7 @@ async def brokenspoke_analyzer_run_prepare(
 ):
     """Run the prepare command of the brokenspoke-analyzer."""
 
-    return await cli.prepare_(
+    return await bna_cli.prepare_(
         country,
         state,
         city,
@@ -126,7 +126,7 @@ def brokenspoke_analyzer_run_analyze(
     output_dir: os.PathLike,
 ):
     """Run the analyze command of the brokenspoke-analyzer."""
-    cli.analyze_(
+    bna_cli.analyze_(
         state_abbrev,
         state_fips,
         city_shp,
@@ -151,7 +151,7 @@ async def brokenspoke_analyzer_run_n_cleanup(
     """
 
     try:
-        await bsa_cli.prepare_and_run(
+        await bna_cli.prepare_and_run(
             country,
             state,
             city,
@@ -239,8 +239,19 @@ async def compare(city: str, state: str, country: str, city_fips: str) -> pd.Dat
     return df
 
 
-# This should be a function from the brokenspoke-analyzer.
-def normalize_unicode_name(value):
-    n = value.lower()
-    n = unicodedata.normalize("NFKD", n).encode("ascii", "ignore").decode("utf-8")
-    return n
+# Note(rgreinho): This should be part of the Brokenspoke-analyzer.
+def sanitize_value(value: str) -> str:
+    """
+    Sanitize a string for consumption by the BNA scripts.
+
+    Examples:
+        >>> sanitize_value("Chambéry")
+        chambery
+        >>> sanitize_value("Cañon city")
+        canon-city
+    """
+    v = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("utf-8")
+    v = v.lower()
+    v = v.replace(" ", "-")
+    v = v.replace(".", "")
+    return v

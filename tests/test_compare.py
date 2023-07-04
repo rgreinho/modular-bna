@@ -98,16 +98,11 @@ DELTA = 1000
         ),
         pytest.param(
             "chambéry",
-            "auvergne",
+            "savoie",
             "france",
             "0",
-            id="chambery-auvergne-france",
-            marks=[
-                pytest.mark.s,
-                pytest.mark.france,
-                pytest.mark.main,
-                pytest.mark.skip(reason="does not find streets to analyze"),
-            ],
+            id="chambery-savoie-france",
+            marks=[pytest.mark.s, pytest.mark.france, pytest.mark.main],
         ),
         pytest.param(
             "flagstaff",

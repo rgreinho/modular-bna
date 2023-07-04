@@ -52,6 +52,7 @@ markers = [
     "france",
     "spain",
     "usa",
+    "main: main test suite",
     "xs: runs under 5min",
     "s: runs under 15min",
     "m: runs under 60min (1h)",
