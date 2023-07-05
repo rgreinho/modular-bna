@@ -79,7 +79,7 @@ async def run_(
     load_dotenv()
 
     # Prepare the directory structure.
-    normalized_city_name = sanitize_name(f"{city}-{state}-{country}")
+    normalized_city_name = bna.sanitize_value(f"{city}-{state}-{country}")
     print(f"{normalized_city_name=}")
     root = pathlib.Path(".")
     test_dir = root / "tests"
@@ -120,7 +120,7 @@ async def run_(
     script = script_dir / "01-setup_database.sh"
     subprocess.run([str(script.absolute())], check=True)
 
-    # # Import.
+    # Import.
     logger.info("Import neighborhood")
     script = script.with_name("21-import_neighborhood.sh")
     subprocess.run([str(script.absolute())], check=True)
@@ -151,10 +151,3 @@ async def run_(
     output_dir.mkdir(parents=True, exist_ok=True)
     script = script.with_name("40-export-export_connectivity.sh")
     subprocess.run([str(script.absolute()), str(output_dir.absolute())], check=True)
-
-
-def sanitize_name(value):
-    n = bna.normalize_unicode_name(value)
-    n = n.replace(" ", "-")
-    n = n.replace(".", "")
-    return n

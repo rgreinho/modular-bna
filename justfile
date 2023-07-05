@@ -64,16 +64,16 @@ docker-build:
 
 # Run the doctests.
 doctest:
-    python -m xdoctest {{ modular_bna_dir }}
+    poetry run python -m xdoctest {{ modular_bna_dir }}
 
 # Test all the cities.
 test:
-  poetry run pytest -v
+    poetry run pytest -v
 
 # Test only the US cities.
 test-usa:
-  poetry run pytest -v -m usa
+    poetry run pytest -v -m usa
 
 # Test only the XS cities.
 test-xs:
-  poetry run pytest -v -m xs
+    poetry run pytest -v -m xs
