@@ -98,6 +98,7 @@ async def run_(
     state_abbrev, state_fips, run_import_jobs = bna.derive_state_info(st)
 
     # Measure the processing time.
+    profiler = {}
     total_time = time.time()
 
     # Prepare the input files for the analysis.
@@ -105,9 +106,9 @@ async def run_(
         logger.info("Prepare input files")
         start = time.time()
         await bna.brokenspoke_analyzer_run_prepare(city, state, country, city_dir)
-        logger.debug(
-            f"Prepare input files wall clock time: {timedelta(seconds=time.time() - start)}"
-        )
+        elapsed = timedelta(seconds=time.time() - start)
+        profiler["Prepare input files"] = elapsed
+        logger.debug(f"Prepare input files wall clock time: {elapsed}")
 
     # Define the variables required by the original BNA scripts.
     debug = "1" if appstate["verbose"] else "0"
@@ -130,67 +131,67 @@ async def run_(
     start = time.time()
     script = script_dir / "01-setup_database.sh"
     subprocess.run([str(script.absolute())], check=True)
-    logger.debug(
-        f"Setup database wall clock time: {timedelta(seconds=time.time() - start)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    # profiler["-- Setup database"] = elapsed
+    logger.debug(f"Setup database wall clock time: {elapsed}")
 
     # Import.
     logger.info("Import neighborhood")
     start_import = start = time.time()
     script = script.with_name("21-import_neighborhood.sh")
     subprocess.run([str(script.absolute())], check=True)
-    logger.debug(
-        f"Import neighborhood: wall clock time: {timedelta(seconds=time.time() - start)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["21-import_neighborhood.sh"] = elapsed
+    logger.debug(f"Import neighborhood: wall clock time: {elapsed}")
 
     if run_import_jobs == "1":
         logger.info("Import jobs")
         start = time.time()
         script = script.with_name("22-import_jobs.sh")
         subprocess.run([str(script.absolute())], check=True)
-        logger.debug(
-            f"Import jobs: all clock time: {timedelta(seconds=time.time() - start)}"
-        )
+        elapsed = timedelta(seconds=time.time() - start)
+        profiler["22-import_jobs.sh"] = elapsed
+        logger.debug(f"Import jobs: all clock time: {elapsed}")
 
     logger.info("Import OSM")
     start = time.time()
     script = script.with_name("23-import_osm.sh")
     subprocess.run([str(script), str(city_osm_file.absolute())], check=True)
-    logger.debug(
-        f"Import OSM wall clock time: {timedelta(seconds=time.time() - start)}"
-    )
-    logger.debug(
-        f"Import wall clock time: {timedelta(seconds=time.time() - start_import)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["23-import_osm.sh"] = elapsed
+    logger.debug(f"Import OSM wall clock time: {elapsed}")
+    elapsed = timedelta(seconds=time.time() - start_import)
+    profiler["-- Import"] = elapsed
+    logger.debug(f"Import wall clock time: {elapsed}")
 
     # Compute.
     logger.info("Compute features")
     start_compute = start = time.time()
     script = script.with_name("30-compute-features.sh")
     subprocess.run([str(script.absolute())], check=True)
-    logger.debug(
-        f"Compute features: all clock time: {timedelta(seconds=time.time() - start)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["30-compute-features.sh"] = elapsed
+    logger.debug(f"Compute features: all clock time: {elapsed}")
 
     logger.info("Compute stress")
     start = time.time()
     script = script.with_name("31-compute-stress.sh")
     subprocess.run([str(script.absolute())], check=True)
-    logger.debug(
-        f"Compute stress wall clock time: {timedelta(seconds=time.time() - start)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["31-compute-stress.sh"] = elapsed
+    logger.debug(f"Compute stress wall clock time: {elapsed}")
 
     logger.info("Compute connectivity")
     start = time.time()
     script = script.with_name("32-compute-run-connectivity.sh")
     subprocess.run([str(script.absolute())], check=True)
-    logger.debug(
-        f"Compute connectivity wall clock time: {timedelta(seconds=time.time() - start)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["32-compute-run-connectivity.sh"] = elapsed
+    logger.debug(f"Compute connectivity wall clock time: {elapsed}")
 
-    logger.debug(
-        f"Compute wall clock time: {timedelta(seconds=time.time() - start_compute)}"
-    )
+    elapsed = timedelta(seconds=time.time() - start_compute)
+    profiler["-- Compute"] = elapsed
+    logger.debug(f"Compute wall clock time: {elapsed}")
 
     # Export.
     logger.info("Export results")
@@ -199,8 +200,17 @@ async def run_(
     output_dir.mkdir(parents=True, exist_ok=True)
     script = script.with_name("40-export-export_connectivity.sh")
     subprocess.run([str(script.absolute()), str(output_dir.absolute())], check=True)
-    logger.debug(f"Export wall clock time: {timedelta(seconds=time.time() - start)}")
+    elapsed = timedelta(seconds=time.time() - start)
+    profiler["-- Export"] = elapsed
+    logger.debug(f"Export wall clock time: {elapsed}")
 
-    logger.debug(
-        f"Total wall clock time: {timedelta(seconds=time.time() - total_time)}"
-    )
+    total_elapsed = timedelta(seconds=time.time() - total_time)
+    profiler["Total"] = total_elapsed
+    logger.debug(f"Total wall clock time: {total_elapsed}")
+
+    # Print profiler info.
+    print(f"{'Label':^35} {'Duration':^15} {'%':^4}")
+    print("-" * 56)
+    for label, duration in profiler.items():
+        perc = duration.total_seconds() * 100 / total_elapsed.total_seconds()
+        print(f"{label:<35} {str(duration):<15} {perc:0.0f}%")
