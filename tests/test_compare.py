@@ -2,6 +2,7 @@
 
 import pytest
 from dotenv import load_dotenv
+from loguru import logger
 
 from modular_bna.core import bna
 
@@ -131,6 +132,9 @@ DELTA = 1000
 )
 @pytest.mark.asyncio
 async def test_compare(city: str, state: str, country: str, city_fips: str):
+    # Set the logging level.
+    logger.level("DEBUG")
+
     # Load the environment variables.
     load_dotenv()
 
