@@ -5,6 +5,8 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import time
+from datetime import timedelta
 
 import typer
 from dotenv import load_dotenv
@@ -97,7 +99,10 @@ async def run_(
 
     # Prepare the input files for the analysis.
     if prepare:
+        logger.info("Preparing input files...")
+        start = time.time()
         await bna.brokenspoke_analyzer_run_prepare(city, state, country, city_dir)
+        logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
 
     # Define the variables required by the original BNA scripts.
     debug = "1" if appstate["verbose"] else "0"
@@ -117,37 +122,62 @@ async def run_(
 
     # Prepare.
     logger.info("Setup database")
+    start = time.time()
     script = script_dir / "01-setup_database.sh"
     subprocess.run([str(script.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
 
     # Import.
     logger.info("Import neighborhood")
+    start_import = start = time.time()
     script = script.with_name("21-import_neighborhood.sh")
     subprocess.run([str(script.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+
     if run_import_jobs == "1":
         logger.info("Import jobs")
+        start = time.time()
         script = script.with_name("22-import_jobs.sh")
         subprocess.run([str(script.absolute())], check=True)
+        logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+
     logger.info("Import OSM")
+    start = time.time()
     script = script.with_name("23-import_osm.sh")
-    subprocess.run(
-        [str(script), str(city_osm_file.absolute())],
-        check=True,
+    subprocess.run([str(script), str(city_osm_file.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+    logger.debug(
+        f"Import wall clock time: {timedelta(seconds=time.time() - start_import)}"
     )
 
     # Compute.
     logger.info("Compute features")
+    start_compute = start = time.time()
     script = script.with_name("30-compute-features.sh")
     subprocess.run([str(script.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+
     logger.info("Compute stress")
+    start = time.time()
     script = script.with_name("31-compute-stress.sh")
     subprocess.run([str(script.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+
     logger.info("Compute connectivity")
+    start = time.time()
     script = script.with_name("32-compute-run-connectivity.sh")
     subprocess.run([str(script.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
+
+    logger.debug(
+        f"Import wall clock time: {timedelta(seconds=time.time() - start_compute)}"
+    )
 
     # Export.
+    logger.info("Export results")
+    start = time.time()
     shutil.rmtree(output_dir, ignore_errors=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     script = script.with_name("40-export-export_connectivity.sh")
     subprocess.run([str(script.absolute()), str(output_dir.absolute())], check=True)
+    logger.debug(f"Wall clock time: {timedelta(seconds=time.time() - start)}")
