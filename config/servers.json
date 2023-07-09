@@ -1,9 +1,9 @@
 {
   "Servers": {
     "1": {
-      "Name": "Bootcamp",
-      "Group": "Bootcamp",
-      "Username": "bootcamp",
+      "Name": "bna",
+      "Group": "bna",
+      "Username": "postgres",
       "Host": "postgres",
       "Port": 5432,
       "SSLMode": "prefer",
