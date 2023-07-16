@@ -788,6 +788,19 @@ files = [
 ]
 
 [[package]]
+name = "gdal"
+version = "3.6.4"
+description = "GDAL: Geospatial Data Abstraction Library"
+optional = false
+python-versions = ">=3.6.0"
+files = [
+    {file = "GDAL-3.6.4.tar.gz", hash = "sha256:c07d548cbd6544e8a51651fc1e487ca4b39e8fe6b5b3c886082d87f0e49e8313"},
+]
+
+[package.extras]
+numpy = ["numpy (>1.0.0)"]
+
+[[package]]
 name = "geopandas"
 version = "0.13.2"
 description = "Geographic pandas extensions"
@@ -2528,4 +2541,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ca5a279aaba282c8ede9f5b63c00f702797cc53ef7813111de24fffe3b4270ac"
+content-hash = "9df93536812e6682f49ebca158d0f1726f8d062121f1bf2fa08399b9d7503690"

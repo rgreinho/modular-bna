@@ -67,34 +67,42 @@ def prepare_environment(
         >>>     "washington", "district of columbia", "usa", "1150000", "11", "DC", "1"
         >>> )
         >>> assert d == {
-        >>>    "BNA_CITY": "washington",
-        >>>    "BNA_FULL_STATE": "district of columbia",
         >>>    "BNA_CITY_FIPS": "1150000",
+        >>>    "BNA_CITY": "washington",
         >>>    "BNA_COUNTRY": "usa",
+        >>>    "BNA_FULL_STATE": "district of columbia",
         >>>    "BNA_SHORT_STATE": "dc",
         >>>    "BNA_STATE_FIPS": "11",
-        >>>    "RUN_IMPORT_JOBS": "1",
+        >>>    "CENSUS_YEAR": "2019",
+        >>>    "CITY_DEFAULT": "NULL",
         >>>    "NB_COUNTRY": "usa",
+        >>>    "NB_INPUT_SRID": "4236",
         >>>    "PFB_CITY_FIPS": "1150000",
         >>>    "PFB_STATE_FIPS": "11",
         >>>    "PFB_STATE": "dc",
+        >>>    "RUN_IMPORT_JOBS": "1",
+        >>>    "STATE_DEFAULT": "30",
         >>> }
     """
     normalized_city_fips = f"{city_fips:07}"
     normalized_state = state_abbrev.lower()
     normalized_state_fips = str(state_fips)
     return {
-        "BNA_CITY": city,
-        "BNA_FULL_STATE": state,
         "BNA_CITY_FIPS": normalized_city_fips,
+        "BNA_CITY": city,
         "BNA_COUNTRY": country,
+        "BNA_FULL_STATE": state,
         "BNA_SHORT_STATE": normalized_state,
         "BNA_STATE_FIPS": normalized_state_fips,
-        "RUN_IMPORT_JOBS": run_import_jobs,
+        "CENSUS_YEAR": "2019",
+        "CITY_DEFAULT": "NULL",
         "NB_COUNTRY": country,
+        "NB_INPUT_SRID": "4236",
         "PFB_CITY_FIPS": normalized_city_fips,
         "PFB_STATE_FIPS": normalized_state_fips,
         "PFB_STATE": normalized_state,
+        "RUN_IMPORT_JOBS": run_import_jobs,
+        "STATE_DEFAULT": "30",
     }
 
 

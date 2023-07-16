@@ -13,7 +13,10 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing_extensions import Annotated
 
-from modular_bna.core import bna
+from modular_bna.core import (
+    bna,
+    utm,
+)
 
 
 def callback(verbose: int = typer.Option(0, "--verbose", "-v", count=True)):
@@ -111,17 +114,13 @@ async def run_(
         logger.debug(f"Prepare input files wall clock time: {elapsed}")
 
     # Define the variables required by the original BNA scripts.
+    absolute_boundary_file = str(city_boundary_file.absolute())
     debug = "1" if appstate["verbose"] else "0"
     bna_env = bna.prepare_environment(
         city, state, country, city_fips, state_fips, state_abbrev, run_import_jobs
     )
-    bna_env["CENSUS_YEAR"] = "2019"
-    bna_env["CITY_DEFAULT"] = "NULL"
-    bna_env["NB_INPUT_SRID"] = "4236"
-    bna_env["NB_OUTPUT_SRID"] = "2163"
-    bna_env["STATE_DEFAULT"] = "30"
     bna_env["PFB_DEBUG"] = debug
-    bna_env["NB_BOUNDARY_FILE"] = str(city_boundary_file.absolute())
+    bna_env["NB_BOUNDARY_FILE"] = absolute_boundary_file
     bna_env["NB_TEMPDIR"] = str(city_dir.absolute())
     logger.debug(f"{bna_env=}")
     os.environ.update(**bna_env)
@@ -134,6 +133,10 @@ async def run_(
     elapsed = timedelta(seconds=time.time() - start)
     # profiler["-- Setup database"] = elapsed
     logger.debug(f"Setup database wall clock time: {elapsed}")
+
+    # Detect output SRID.
+    output_srid = utm.get_srid(absolute_boundary_file)
+    os.environ["NB_OUTPUT_SRID"] = output_srid
 
     # Import.
     logger.info("Import neighborhood")
