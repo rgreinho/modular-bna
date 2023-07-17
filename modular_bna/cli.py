@@ -129,7 +129,7 @@ async def run_(
     # Prepare.
     logger.info("Setup database")
     start = time.time()
-    script = script_dir / "01-setup_database.sh"
+    script = script_dir / "01-better_setup_database.sh"
     subprocess.run([str(script.absolute())], check=True)
     elapsed = timedelta(seconds=time.time() - start)
     # profiler["-- Setup database"] = elapsed
