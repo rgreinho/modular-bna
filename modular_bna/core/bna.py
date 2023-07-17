@@ -97,7 +97,7 @@ def prepare_environment(
         "CENSUS_YEAR": "2019",
         "CITY_DEFAULT": "NULL",
         "NB_COUNTRY": country,
-        "NB_INPUT_SRID": "4236",
+        "NB_INPUT_SRID": "4326",
         "PFB_CITY_FIPS": normalized_city_fips,
         "PFB_STATE_FIPS": normalized_state_fips,
         "PFB_STATE": normalized_state,

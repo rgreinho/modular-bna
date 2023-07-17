@@ -72,6 +72,22 @@ def run(
     asyncio.run(run_(city, state, country, city_fips, prepare))
 
 
+@app.command()
+def run_with_compose(
+    city: str,
+    state: str,
+    country: str,
+    city_fips: str,
+    prepare: Annotated[bool, typer.Option(help="Prepare input files")] = False,
+):
+    """Start and stop docker compose when running an analysis."""
+    # Load the environment variables.
+    load_dotenv()
+    asyncio.run(
+        bna.modular_bna_run_n_clean_up(city, state, country, city_fips, prepare)
+    )
+
+
 async def run_(
     city: str,
     state: str,

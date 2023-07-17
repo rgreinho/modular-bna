@@ -5,6 +5,7 @@ set -euo pipefail
 GIT_ROOT=$(git rev-parse --show-toplevel)
 NB_MAX_TRIP_DISTANCE=2680
 NB_BOUNDARY_BUFFER=$NB_MAX_TRIP_DISTANCE
+NB_COUNTRY=$(echo "$NB_COUNTRY" | tr '[:lower:]' '[:upper:]')
 
 # Function to import a shapefile (using 'dump' mode for quickness) and convert it to the target SRID
 function import_and_transform_shapefile() {
@@ -21,10 +22,6 @@ function import_and_transform_shapefile() {
   echo "DONE: Importing ${IMPORT_TABLENAME}"
 }
 
-# Import neighborhood boundary
-import_and_transform_shapefile "${NB_BOUNDARY_FILE}" neighborhood_boundary "${NB_INPUT_SRID}"
-
-NB_COUNTRY=$(echo "$NB_COUNTRY" | tr '[:lower:]' '[:upper:]')
 
 # Import neighborhood boundary.
 echo "IMPORTING: Loading neighborhood boundary: ${NB_BOUNDARY_FILE}"
