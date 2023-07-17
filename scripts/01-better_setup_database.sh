@@ -2,8 +2,8 @@
 set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
-CORES=$(python -c "import multiprocessing; print(multiprocessing.cpu_count());")
-HWMEMSIZE=$(sysctl -n hw.memsize)
+CORES=$(docker info --format json | jq '.NCPU')
+HWMEMSIZE=$(docker info --format json | jq '.MemTotal')
 MEMORY_MB=$((HWMEMSIZE / 1024 ** 2))
 
 # Set configuration parameters.

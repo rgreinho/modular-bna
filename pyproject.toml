@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.11"
 better-exceptions = "^0.3.3"
 brokenspoke-analyzer = {git = "https://github.com/PeopleForBikes/brokenspoke-analyzer", rev = "main"}
-gdal = "3.6.4"
+gdal = "~3.6.0"
 loguru = "^0.7.0"
 python-dotenv = "^1.0.0"
 rich = "^13.4.2"
