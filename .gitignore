@@ -1,7 +1,7 @@
 __pycache__/
 .DS_Store
 .ruff_cache
-.venv/
+.venv
 .vscode/
 *.pyc
 cache/

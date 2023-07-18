@@ -2,18 +2,12 @@
 set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
-cd "$(dirname "$0")"
-
-# PGHOST="${PGHOST:-127.0.0.1}"
-# PGDATABASE="${PGDATABASE:-pfb}"
-# PGUSER="${PGUSER:-gis}"
-# NB_POSTGRESQL_PASSWORD="${NB_POSTGRESQL_PASSWORD:-gis}"
+CORES=$(python -c "import multiprocessing; print(multiprocessing.cpu_count());")
+GIT_ROOT=$(git rev-parse --show-toplevel)
 NB_OUTPUT_SRID="${NB_OUTPUT_SRID:-2163}"
 NB_SIGCTL_SEARCH_DIST="${NB_SIGCTL_SEARCH_DIST:-25}" # max search distance for intersection controls
 NB_MAX_TRIP_DISTANCE="${NB_MAX_TRIP_DISTANCE:-2680}"
 NB_BOUNDARY_BUFFER="${NB_BOUNDARY_BUFFER:-$NB_MAX_TRIP_DISTANCE}"
-# PFB_STATE_FIPS="${PFB_STATE_FIPS:-NULL}"
-# PFB_CITY_FIPS="${PFB_CITY_FIPS:-0}"
 PFB_RESIDENTIAL_SPEED_LIMIT="${PFB_RESIDENTIAL_SPEED_LIMIT:-}"
 
 # Get the neighborhood_boundary bbox as extent of trimmed census blocks
@@ -44,7 +38,7 @@ osm2pgrouting \
   --password "${PGPASSWORD}" \
   --schema received \
   --prefix neighborhood_ \
-  --conf ./mapconfig_highway.xml \
+  --conf "${GIT_ROOT}/scripts/mapconfig_highway.xml" \
   --clean
 
 # import the osm with cycleways that the above misses (bug in osm2pgrouting)
@@ -56,7 +50,7 @@ osm2pgrouting \
   --password "${PGPASSWORD}" \
   --schema scratch \
   --prefix neighborhood_cycwys_ \
-  --conf ./mapconfig_cycleway.xml \
+  --conf "${GIT_ROOT}/scripts/mapconfig_cycleway.xml" \
   --clean
 
 # rename a few tables (or drop if not needed)
@@ -73,7 +67,8 @@ osm2pgsql \
   --create \
   --prefix "neighborhood_osm_full" \
   --proj "${NB_OUTPUT_SRID}" \
-  --style ./pfb.style \
+  --style "${GIT_ROOT}/scripts/pfb.style" \
+  --number-processes "${CORES}" \
   "${OSM_DATA_FILE}"
 
 # Delete downloaded temp OSM data
@@ -81,14 +76,10 @@ rm -rf "${OSM_TEMPDIR}"
 
 # Create table for state residential speeds
 echo 'START: Importing State Default Speed Table'
-psql <../sql/speed_tables.sql
-
-SPEED_TEMPDIR="${NB_TEMPDIR:-$(mktemp -d)}"
-mkdir -p "${SPEED_TEMPDIR}"
+psql <"${GIT_ROOT}/sql/speed_tables.sql"
 
 # Import state residential speeds file
-STATE_SPEED_FILENAME="state_fips_speed"
-STATE_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${STATE_SPEED_FILENAME}.csv"
+STATE_SPEED_DOWNLOAD="${NB_TEMPDIR}/state_fips_speed.csv"
 if [ -e "${STATE_SPEED_DOWNLOAD}" ]; then
   psql -c "\copy state_speed FROM '${STATE_SPEED_DOWNLOAD}' delimiter ',' csv header"
   # Set default residential speed for state
@@ -102,8 +93,7 @@ echo "DONE: Importing state default residential speed"
 
 # Create table for city residential speeds
 echo 'START: Importing City Default Speed Table'
-CITY_SPEED_FILENAME="city_fips_speed"
-CITY_SPEED_DOWNLOAD="${SPEED_TEMPDIR}/${CITY_SPEED_FILENAME}.csv"
+CITY_SPEED_DOWNLOAD="${NB_TEMPDIR}/city_fips_speed.csv"
 if [ -e "${CITY_SPEED_DOWNLOAD}" ]; then
   psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
   # Set default residential speed for city
@@ -125,18 +115,19 @@ else
 fi
 
 # Save default speed limit to a table for export later
-psql -c "INSERT INTO \"residential_speed_limit\" (
-            state_fips_code,
-            city_fips_code,
-            state_speed,
-            city_speed
-        ) VALUES (
-          ${PFB_STATE_FIPS},
-          ${PFB_CITY_FIPS},
-          ${STATE_DEFAULT},
-          ${CITY_DEFAULT}
-        );"
-
+psql <<SQL
+INSERT INTO "residential_speed_limit" (
+    state_fips_code,
+    city_fips_code,
+    state_speed,
+    city_speed
+) VALUES (
+    ${PFB_STATE_FIPS},
+    ${PFB_CITY_FIPS},
+    ${STATE_DEFAULT},
+    ${CITY_DEFAULT}
+);
+SQL
 echo "DONE: Importing default residential speed limit"
 
 # move the full osm tables to the received schema
