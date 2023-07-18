@@ -15,52 +15,44 @@ function import_and_transform_shapefile() {
 
   echo "START: Importing ${IMPORT_TABLENAME}"
   # https://manpages.debian.org/stretch/postgis/shp2pgsql.1.en.html
-  shp2pgsql -c -I -D -s "${IMPORT_SRID}" "${IMPORT_FILE}" "${IMPORT_TABLENAME}" | psql
+  shp2pgsql -p -I -D -s "${IMPORT_SRID}" "${IMPORT_FILE}" "${IMPORT_TABLENAME}" | psql
   shp2pgsql -d -I -D -s "${IMPORT_SRID}" "${IMPORT_FILE}" "${IMPORT_TABLENAME}" | psql
   psql -c "ALTER TABLE ${IMPORT_TABLENAME} ALTER COLUMN geom \
             TYPE geometry(MultiPolygon,${NB_OUTPUT_SRID}) USING ST_Force2d(ST_Transform(geom,${NB_OUTPUT_SRID}));"
   echo "DONE: Importing ${IMPORT_TABLENAME}"
 }
 
-
 # Import neighborhood boundary.
 echo "IMPORTING: Loading neighborhood boundary: ${NB_BOUNDARY_FILE}"
 import_and_transform_shapefile "${NB_BOUNDARY_FILE}" neighborhood_boundary "${NB_INPUT_SRID}"
-psql <<SQL
-ALTER TABLE neighborhood_boundary ALTER COLUMN geom
-TYPE GEOMETRY (MULTIPOLYGON, ${NB_OUTPUT_SRID}) USING ST_FORCE2D(ST_TRANSFORM(geom, ${NB_OUTPUT_SRID}));
-SQL
-
-# Import waterblocks.
-if [ "${NB_COUNTRY}" == "USA" ]; then
-  echo "IMPORTING: Downloading water blocks"
-  psql <"${GIT_ROOT}/sql/create_us_water_blocks_table.sql"
-  psql -c "\copy water_blocks FROM '${NB_TEMPDIR}/censuswaterblocks.csv' delimiter ',' csv header;"
-  echo "DONE: Importing water blocks"
-fi
 
 # Import block shapefile
 echo "IMPORTING: Loading census blocks"
 import_and_transform_shapefile "${NB_TEMPDIR}/population.shp" neighborhood_census_blocks "${NB_INPUT_SRID}"
-psql <<SQL
-ALTER TABLE neighborhood_census_blocks ALTER COLUMN geom
-TYPE GEOMETRY (MULTIPOLYGON, ${NB_OUTPUT_SRID}) USING ST_FORCE2D(ST_TRANSFORM(geom, ${NB_OUTPUT_SRID}));
-SQL
 
 # Only keep blocks in boundary+buffer
 echo "IMPORTING: Applying boundary buffer"
 echo "START: Removing blocks outside buffer with size ${NB_BOUNDARY_BUFFER}"
-psql -c "DELETE FROM neighborhood_census_blocks AS blocks USING neighborhood_boundary \
-        AS boundary WHERE NOT ST_DWithin(blocks.geom, boundary.geom, \
-        ${NB_BOUNDARY_BUFFER});"
+psql <<SQL
+DELETE FROM neighborhood_census_blocks AS blocks
+USING neighborhood_boundary AS boundary
+WHERE NOT ST_DWithin(blocks.geom, boundary.geom, ${NB_BOUNDARY_BUFFER});
+SQL
 echo "DONE: Finished removing blocks outside buffer"
 
 if [ "${NB_COUNTRY}" == "USA" ]; then
+  # Import waterblocks.
+  echo "IMPORTING: Downloading water blocks"
+  psql <"${GIT_ROOT}/sql/create_us_water_blocks_table.sql"
+  psql -c "\copy water_blocks FROM '${NB_TEMPDIR}/censuswaterblocks.csv' delimiter ',' csv header;"
+  echo "DONE: Importing water blocks"
+
   # Discard blocks that are all water / no land area
   echo "IMPORTING: Removing water blocks"
   echo "START: Removing blocks that are 100% water from analysis"
-  psql -c "DELETE FROM neighborhood_census_blocks AS blocks USING water_blocks \
-           AS water WHERE blocks.BLOCKID10 = water.geoid;"
+  psql -c "DELETE FROM neighborhood_census_blocks AS blocks \
+           USING water_blocks AS water \
+           WHERE blocks.BLOCKID10 = water.geoid;"
   echo "DONE: FINISHED removing blocks that are 100% water"
 fi
 

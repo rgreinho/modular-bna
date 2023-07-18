@@ -76,7 +76,7 @@ def prepare_environment(
         >>>    "CENSUS_YEAR": "2019",
         >>>    "CITY_DEFAULT": "NULL",
         >>>    "NB_COUNTRY": "usa",
-        >>>    "NB_INPUT_SRID": "4236",
+        >>>    "NB_INPUT_SRID": "4326",
         >>>    "PFB_CITY_FIPS": "1150000",
         >>>    "PFB_STATE_FIPS": "11",
         >>>    "PFB_STATE": "dc",
