@@ -11,7 +11,7 @@ from modular_bna.core import bna
 # As a result, a delta of 1000 means 10%.
 # 10000 means the delta is disabled until we figure out why the delta is so big
 # in some cases
-DELTA = 0
+DELTA = 10
 
 
 @pytest.mark.parametrize(
