@@ -225,8 +225,13 @@ def delta_df(output_dir: os.PathLike, modular_bna_output_dir: os.PathLike):
     return df
 
 
-async def compare(city: str, state: str, country: str, city_fips: str) -> pd.DataFrame:
+async def compare(
+    city: str, state: str, country: str, city_fips: str, verbose=3
+) -> pd.DataFrame:
     """Compare the results of the original BNA versus the modular BNA."""
+    # Run it in debug mode.
+    cli.appstate["verbose"] = verbose
+
     # Prepare the directories.
     output_dir, modular_bna_output_dir = prepare_sample_folder(city, state)
 

@@ -5,7 +5,6 @@ set -euo pipefail
 CORES=$(python -c "import multiprocessing; print(multiprocessing.cpu_count());")
 GIT_ROOT=$(git rev-parse --show-toplevel)
 NB_OUTPUT_SRID="${NB_OUTPUT_SRID:-2163}"
-NB_SIGCTL_SEARCH_DIST="${NB_SIGCTL_SEARCH_DIST:-25}" # max search distance for intersection controls
 NB_MAX_TRIP_DISTANCE="${NB_MAX_TRIP_DISTANCE:-2680}"
 NB_BOUNDARY_BUFFER="${NB_BOUNDARY_BUFFER:-$NB_MAX_TRIP_DISTANCE}"
 PFB_RESIDENTIAL_SPEED_LIMIT="${PFB_RESIDENTIAL_SPEED_LIMIT:-}"
@@ -19,10 +18,7 @@ mkdir -p "${OSM_TEMPDIR}"
 
 echo "IMPORTING Clipping provided OSM file"
 OSM_DATA_FILE="${OSM_TEMPDIR}/converted.osm"
-osmconvert "${1}" \
-  --drop-broken-refs \
-  -b="${BBOX}" \
-  -o="${OSM_DATA_FILE}"
+osmconvert "${1}" --drop-broken-refs -b="${BBOX}" -o="${OSM_DATA_FILE}"
 # If the OSM file contains "\" as a segment name, osm2pgrouting chokes on those segments and drops
 # everything that happens to be in the same processing chunk. So strip them out.
 sed 's/\\/backslash/' "$OSM_DATA_FILE" >"${OSM_DATA_FILE}-cleaned"
@@ -71,9 +67,6 @@ osm2pgsql \
   --number-processes "${CORES}" \
   "${OSM_DATA_FILE}"
 
-# Delete downloaded temp OSM data
-rm -rf "${OSM_TEMPDIR}"
-
 # Create table for state residential speeds
 echo 'START: Importing State Default Speed Table'
 psql <"${GIT_ROOT}/sql/speed_tables.sql"
@@ -107,7 +100,7 @@ if [ -n "${PFB_RESIDENTIAL_SPEED_LIMIT}" ]; then
 fi
 
 # Check if no value for city default, if so set to NULL
-if [[ -z "$CITY_DEFAULT" ]]; then
+if [ -z "$CITY_DEFAULT" ]; then
   echo "No default residential speed in city."
   CITY_DEFAULT=NULL
 else
