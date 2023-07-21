@@ -55,7 +55,7 @@ DELTA = 10
             "usa",
             "2757220",
             id="st-louis-park-mn-usa",
-            marks=[pytest.mark.m, pytest.mark.usa, pytest.mark.main],
+            marks=[pytest.mark.m, pytest.mark.usa],
         ),
         pytest.param(
             "arcata",
@@ -127,6 +127,34 @@ DELTA = 10
                 pytest.mark.usa,
                 pytest.mark.skip(reason="takes about a day to complete"),
             ],
+        ),
+        pytest.param(
+            "jackson",
+            "wyoming",
+            "usa",
+            "5640120",
+            id="jackson-wy-usa",
+            marks=[pytest.mark.xs, pytest.mark.usa, pytest.mark.main],
+        ),
+        pytest.param(
+            "port townsend",
+            "washington",
+            "usa",
+            "5355855",
+            id="port-townsend-wa-usa",
+            marks=[
+                pytest.mark.s,
+                pytest.mark.usa,
+                pytest.mark.main,
+            ],
+        ),
+        pytest.param(
+            "alvarado",
+            "texas",
+            "usa",
+            "4802260",
+            id="alvarado-tx-usa",
+            marks=[pytest.mark.s, pytest.mark.usa, pytest.mark.main],
         ),
     ],
 )

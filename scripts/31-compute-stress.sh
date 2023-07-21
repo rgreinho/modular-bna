@@ -3,13 +3,13 @@ set -euo pipefail
 [ "${PFB_DEBUG}" -eq "1" ] && set -x
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-STATE_DEFAULT=$(psql -t -c "SELECT state_speed FROM residential_speed_limit WHERE city_fips_code = '${PFB_CITY_FIPS}'"| tr -d '[:space:]')
+STATE_DEFAULT=$(psql -t -c "SELECT state_speed FROM residential_speed_limit WHERE city_fips_code = '${PFB_CITY_FIPS}'" | tr -d '[:space:]')
 if [ -z "${STATE_DEFAULT}" ]; then
-STATE_DEFAULT=NULL
+  STATE_DEFAULT=NULL
 fi
-CITY_DEFAULT=$(psql -t -c "SELECT city_speed FROM residential_speed_limit WHERE city_fips_code = '${PFB_CITY_FIPS}'"| tr -d '[:space:]')
+CITY_DEFAULT=$(psql -t -c "SELECT city_speed FROM residential_speed_limit WHERE city_fips_code = '${PFB_CITY_FIPS}'" | tr -d '[:space:]')
 if [ -z "${CITY_DEFAULT}" ]; then
-CITY_DEFAULT=NULL
+  CITY_DEFAULT=NULL
 fi
 
 echo 'Calculating stress'

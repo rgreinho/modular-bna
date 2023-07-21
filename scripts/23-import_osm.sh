@@ -8,6 +8,7 @@ NB_OUTPUT_SRID="${NB_OUTPUT_SRID:-2163}"
 NB_MAX_TRIP_DISTANCE="${NB_MAX_TRIP_DISTANCE:-2680}"
 NB_BOUNDARY_BUFFER="${NB_BOUNDARY_BUFFER:-$NB_MAX_TRIP_DISTANCE}"
 PFB_RESIDENTIAL_SPEED_LIMIT="${PFB_RESIDENTIAL_SPEED_LIMIT:-}"
+NB_COUNTRY=$(echo "$NB_COUNTRY" | tr '[:lower:]' '[:upper:]')
 
 # Get the neighborhood_boundary bbox as extent of trimmed census blocks
 BBOX=$(psql -t -c "select ST_Extent(ST_Transform(geom, 4326)) from neighborhood_census_blocks;" | awk -F '[()]' '{print $2}' | tr " " ",")
@@ -67,60 +68,65 @@ osm2pgsql \
   --number-processes "${CORES}" \
   "${OSM_DATA_FILE}"
 
-# Create table for state residential speeds
-echo 'START: Importing State Default Speed Table'
+# Create speed tables.
 psql <"${GIT_ROOT}/sql/speed_tables.sql"
 
-# Import state residential speeds file
-STATE_SPEED_DOWNLOAD="${NB_TEMPDIR}/state_fips_speed.csv"
-if [ -e "${STATE_SPEED_DOWNLOAD}" ]; then
+# Create table for state residential speeds
+echo 'START: Importing State Default Speed Table'
+
+STATE_DEFAULT=NULL
+if [ "${NB_COUNTRY}" == "USA" ]; then
+  # Import state residential speeds file
+  STATE_SPEED_DOWNLOAD="${NB_TEMPDIR}/state_fips_speed.csv"
   psql -c "\copy state_speed FROM '${STATE_SPEED_DOWNLOAD}' delimiter ',' csv header"
-  # Set default residential speed for state
-  STATE_DEFAULT=$(psql -t -c "SELECT state_speed.speed FROM state_speed WHERE state_speed.fips_code_state = '${PFB_STATE_FIPS}'")
+  STATE_DEFAULT=$(psql -t -c "SELECT state_speed.speed FROM state_speed WHERE state_speed.fips_code_state = '${PFB_STATE_FIPS}'" | tr -d '[:space:]')
+  if [ -z "${STATE_DEFAULT}" ]; then
+    echo "The state of ${PFB_STATE} (fips code: ${PFB_STATE_FIPS}) cannot have a default speed limit null."
+  fi
+  echo "The state default speed is ${STATE_DEFAULT}."
+  echo "DONE: Importing state default residential speed"
 fi
-
-if [ -z "$STATE_DEFAULT" ]; then
-  STATE_DEFAULT=NULL
-fi
-echo "DONE: Importing state default residential speed"
-
 # Create table for city residential speeds
 echo 'START: Importing City Default Speed Table'
-CITY_SPEED_DOWNLOAD="${NB_TEMPDIR}/city_fips_speed.csv"
-if [ -e "${CITY_SPEED_DOWNLOAD}" ]; then
-  psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
-  # Set default residential speed for city
-  CITY_DEFAULT=$(psql -t -c "SELECT city_speed.speed FROM city_speed WHERE city_speed.fips_code_city = '${PFB_CITY_FIPS}'")
-fi
+CITY_DEFAULT=NULL
 
+# If the speed limit is provided, set/override the city speed limit with that.
+# Otherwise use the city speed file.
 if [ -n "${PFB_RESIDENTIAL_SPEED_LIMIT}" ]; then
-  # If the speed limit is provided, set/override the city speed limit with that.
   echo "Setting city speed limit to provided residential speed limit (${PFB_RESIDENTIAL_SPEED_LIMIT})"
   CITY_DEFAULT=$PFB_RESIDENTIAL_SPEED_LIMIT
-fi
-
-# Check if no value for city default, if so set to NULL
-if [ -z "$CITY_DEFAULT" ]; then
-  echo "No default residential speed in city."
-  CITY_DEFAULT=NULL
 else
-  echo "The city residential default speed is ${CITY_DEFAULT}."
+  CITY_SPEED_DOWNLOAD="${NB_TEMPDIR}/city_fips_speed.csv"
+  if [ -e "${CITY_SPEED_DOWNLOAD}" ]; then
+    psql -c "\copy city_speed FROM '${CITY_SPEED_DOWNLOAD}' delimiter ',' csv header"
+    CITY_SPEED_LIMIT=$(psql -t -c "SELECT city_speed.speed FROM city_speed WHERE city_speed.fips_code_city = '${PFB_CITY_FIPS}'")
+    if [ -n "${CITY_SPEED_LIMIT}" ]; then
+      CITY_DEFAULT=${CITY_SPEED_LIMIT}
+    fi
+  fi
 fi
+echo "The city residential default speed is ${CITY_DEFAULT}."
 
 # Save default speed limit to a table for export later
 psql <<SQL
-INSERT INTO "residential_speed_limit" (
+INSERT INTO residential_speed_limit (
     state_fips_code,
     city_fips_code,
     state_speed,
     city_speed
 ) VALUES (
-    ${PFB_STATE_FIPS},
-    ${PFB_CITY_FIPS},
+    '${PFB_STATE_FIPS}',
+    '${PFB_CITY_FIPS}',
     ${STATE_DEFAULT},
     ${CITY_DEFAULT}
 );
 SQL
+psql -c "SELECT * FROM residential_speed_limit;"
+ROWS=$(psql -t -c "SELECT count(*) FROM residential_speed_limit;" | tr -d '[:space:]')
+if [ "$ROWS" -ne 1 ]; then
+  echo "residential_speed_limit table is corrupted."
+  exit 1
+fi
 echo "DONE: Importing default residential speed limit"
 
 # move the full osm tables to the received schema
