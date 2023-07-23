@@ -24,8 +24,11 @@ def prepare_sample_folder(
 ) -> typing.Tuple[os.PathLike, os.PathLike]:
     """Prepare the directory where to put the input files and results."""
     output_dir = pathlib.Path(f"tests/samples/{city}-{state}")
-    shutil.rmtree(output_dir, ignore_errors=True)
     modular_bna_output_dir = output_dir / "modular-bna"
+    # original_bna_output_dirs = list(output_dir.glob("local-analysis-*"))
+    # for original_bna_output_dir in original_bna_output_dirs:
+    #     shutil.rmtree(original_bna_output_dir, ignore_errors=True)
+    shutil.rmtree(output_dir, ignore_errors=True)
     modular_bna_output_dir.mkdir(parents=True, exist_ok=True)
     return (output_dir, modular_bna_output_dir)
 
@@ -74,14 +77,12 @@ def prepare_environment(
         >>>    "BNA_SHORT_STATE": "dc",
         >>>    "BNA_STATE_FIPS": "11",
         >>>    "CENSUS_YEAR": "2019",
-        >>>    "CITY_DEFAULT": "NULL",
         >>>    "NB_COUNTRY": "usa",
         >>>    "NB_INPUT_SRID": "4326",
         >>>    "PFB_CITY_FIPS": "1150000",
         >>>    "PFB_STATE_FIPS": "11",
         >>>    "PFB_STATE": "dc",
         >>>    "RUN_IMPORT_JOBS": "1",
-        >>>    "STATE_DEFAULT": "30",
         >>> }
     """
     normalized_city_fips = f"{city_fips:07}"
@@ -95,14 +96,12 @@ def prepare_environment(
         "BNA_SHORT_STATE": normalized_state,
         "BNA_STATE_FIPS": normalized_state_fips,
         "CENSUS_YEAR": "2019",
-        "CITY_DEFAULT": "NULL",
         "NB_COUNTRY": country,
         "NB_INPUT_SRID": "4326",
         "PFB_CITY_FIPS": normalized_city_fips,
         "PFB_STATE_FIPS": normalized_state_fips,
         "PFB_STATE": normalized_state,
         "RUN_IMPORT_JOBS": run_import_jobs,
-        "STATE_DEFAULT": "30",
     }
 
 
@@ -111,7 +110,7 @@ async def brokenspoke_analyzer_run_prepare(
     state: str,
     country: str,
     output_dir: os.PathLike,
-    speed_limit: int = 50,
+    speed_limit: int = 30,
 ):
     """Run the prepare command of the brokenspoke-analyzer."""
 
@@ -150,7 +149,8 @@ async def brokenspoke_analyzer_run_n_cleanup(
     state: str,
     country: str,
     output_dir: os.PathLike,
-    speed_limit: int = 50,
+    city_fips,
+    speed_limit: int = 30,
 ) -> None:
     """
     Run the Brokenspoke analyzer.
@@ -169,6 +169,7 @@ async def brokenspoke_analyzer_run_n_cleanup(
             block_size=500,
             block_population=100,
             container_name=CONTAINER_NAME,
+            city_fips=city_fips,
         )
     finally:
         subprocess.run(["docker", "stop", CONTAINER_NAME])
@@ -238,7 +239,9 @@ async def compare(
     # Compute the results with the Brokenspoke-analyzer.
     # This will prepare the input data for the modular-bna at the same time,
     # therefore reducing the processing time and saving disk space.
-    await brokenspoke_analyzer_run_n_cleanup(city, state, country, output_dir)
+    await brokenspoke_analyzer_run_n_cleanup(
+        city, state, country, output_dir, city_fips, 30
+    )
 
     # Compute the results with the modular BNA.
     await modular_bna_run_n_clean_up(city, state, country, city_fips, False)
